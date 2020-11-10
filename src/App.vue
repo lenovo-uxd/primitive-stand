@@ -12,11 +12,16 @@
       <canvas id="canvas"/>
     </div>
     <div class="count" v-show="isCountShow">{{count}}</div>
+    <div class="qrcode-container" v-show="hasTookPhoto">
+      <canvas id="qrcode"></canvas>
+      <p>扫码下载，立即分享</p>
+    </div>
   </div>
 </template>
 
 <script>
 // import HelloWorld from './components/HelloWorld.vue'
+import QRCode from 'qrcode'
 
 export default {
   name: 'App',
@@ -42,7 +47,7 @@ export default {
           overlay.style.display = "block";
           setTimeout(()=>{
             overlay.style.display = "none";
-          },300)
+          },100)
           this.videoObj.pause();
           this.count = 3;
           clearInterval(intervalId);
@@ -52,6 +57,7 @@ export default {
           let canvas = document.getElementById("canvas");
           let ctx = canvas.getContext('2d');
           ctx.drawImage(this.videoObj, 0, 0, vid_width, vid_height);
+          this.makeCode();
         }
       }, 1000)
     },
@@ -69,6 +75,14 @@ export default {
     setStream(stream){
       this.videoObj.srcObject = stream;
       this.videoObj.play();
+    },
+    makeCode(){
+      let qrcode = document.getElementById("qrcode")
+      let url = "http://xiaohui.ai";
+      QRCode.toCanvas(qrcode, url, function (error) {
+        if (error) console.error(error)
+        console.log('success!');
+      })
     }
   },
   mounted: function(){
@@ -141,5 +155,20 @@ export default {
   color: rgb(190, 11, 11);
   text-align: center;
   width: 100%;
+}
+.qrcode-container{
+  position: fixed;
+  right: 20px;
+  bottom: 30px;
+  padding: 5px;
+  background: white;
+}
+.qrcode-container p{
+  font-size: 25px;
+  margin-block-start: 0;
+}
+#qrcode{
+  width: 300px;
+  height: 300px;
 }
 </style>
