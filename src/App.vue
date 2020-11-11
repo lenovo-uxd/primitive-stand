@@ -2,17 +2,17 @@
   <div id="app">
     <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
-    <video id="videoel" preload="auto" loop playsInline autoPlay>
+    <video id="videoel" preload="auto" autoPlay>
     </video>
     <div id="overlay"></div>
     <div class="photo-btn" @click="takePhoto" v-if="!hasTookPhoto">
       <img src="/take-photo.png" alt="拍照按钮"/>
     </div>
-    <div class="show"  v-show="hasTookPhoto">
+    <div class="show">
       <canvas id="canvas"/>
     </div>
     <div class="count" v-show="isCountShow">{{count}}</div>
-    <div class="qrcode-container" v-show="hasTookPhoto">
+    <div class="qrcode-container" v-show="isQrCodeShow">
       <canvas id="qrcode"></canvas>
       <p>扫码下载，立即分享</p>
     </div>
@@ -33,11 +33,13 @@ export default {
       count: 3,
       isCountShow: false,
       hasTookPhoto: false,
+      isQrCodeShow: false,
       videoObj: null
     }
   },
   methods:{
     takePhoto(){
+      this.drawCanvas()
       this.hasTookPhoto = true;
       this.isCountShow = true;
       let intervalId = setInterval(()=>{
@@ -52,17 +54,13 @@ export default {
           this.count = 3;
           clearInterval(intervalId);
           this.isCountShow = false;
-          let vid_width = this.videoObj.width;
-          let vid_height = this.videoObj.height;
-          let canvas = document.getElementById("canvas");
-          let ctx = canvas.getContext('2d');
-          ctx.drawImage(this.videoObj, 0, 0, vid_width, vid_height);
           this.makeCode();
+          this.isQrCodeShow = true;
         }
       }, 1000)
     },
     setVideoSrc() {
-      this.videoObj = document.getElementById('videoel');
+      
       // 获取视频流
       navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
       window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
@@ -76,16 +74,58 @@ export default {
       this.videoObj.srcObject = stream;
       this.videoObj.play();
     },
+    drawCanvas(){
+      let rect = this.videoObj.getBoundingClientRect();
+      let vid_width = rect.width;
+      let vid_height = rect.height;
+      // let canvas = document.getElementById("canvas");
+      // console.log([canvas])
+      // console.log([])
+      console.log(vid_width, vid_height)
+      
+      var v=document.getElementById("videoel");
+      var c=document.getElementById("canvas");
+      let ctx=c.getContext('2d');
+      ctx.drawImage(v,0,0,vid_width, vid_height)
+    },
     makeCode(){
       let qrcode = document.getElementById("qrcode")
       let url = "http://xiaohui.ai";
       QRCode.toCanvas(qrcode, url, function (error) {
         if (error) console.error(error)
-        console.log('success!');
+        // console.log('success!');
       })
+    },
+    getRatio() {
+      var ratio = 0;
+      var screen = window.screen;
+      var ua = navigator.userAgent.toLowerCase();
+      // console.log(window.screen)
+      // console.log(navigator.userAgent.toLowerCase())
+      // console.log(window.devicePixelRatio)
+      // console.log(screen.deviceXDP)
+      // console.log(screen.logicalXDPI)
+      // console.log(window.outerWidth)
+      // console.log(window.innerWidth)
+      if (window.devicePixelRatio !== undefined) {
+        ratio = window.devicePixelRatio;
+      } else if (~ua.indexOf("msie")) {
+        if (screen.deviceXDPI && screen.logicalXDPI) {
+          ratio = screen.deviceXDPI / screen.logicalXDPI;
+        }
+      } else if (
+        window.outerWidth !== undefined &&
+        window.innerWidth !== undefined
+      ) {
+        ratio = window.outerWidth / window.innerWidth;
+      }
+      return ratio;
     }
   },
   mounted: function(){
+    // let ratio = this.getRatio()
+    // console.log(ratio)
+    this.videoObj = document.getElementById('videoel');
     this.setVideoSrc()
   }
 }
@@ -109,12 +149,12 @@ export default {
   transform: scale(-1.2, 1.2);
   -ms-filter: fliph;
   filter: fliph; */
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  top: 0;
-  object-fit: fill;
+  /* position: absolute; */
+  /* width: 1080px; */
+  /* height: 1920px; */
+  /* left: 0;
+  top: 0; */
+  /* object-fit: fill; */
   /* z-index: 0; */
   /*IE*/
   /*visibility: hidden;*/
@@ -122,13 +162,20 @@ export default {
   /* position: relative;
   top:70px; */
 }
-#canvas{
+/* .show{
   position: fixed;
-  width: 100%;
-  height: 100%;
   left: 0;
   top: 0;
-  /* z-index: 10; */
+  width: 1080px;
+  height: 1920px;
+}
+#canvas{
+  width: 1080px;
+  height: 1920px;
+} */
+#canvas{
+  /* width: 1080px; */
+  /* height: 480px; */
 }
 #overlay{
   position: fixed;
@@ -168,7 +215,7 @@ export default {
   margin-block-start: 0;
 }
 #qrcode{
-  width: 300px;
-  height: 300px;
+  width: 300px!important;
+  height: 300px!important;
 }
 </style>
