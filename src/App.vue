@@ -1,37 +1,49 @@
- <template>
+<template>
   <div id="app">
+    <div class="input-page" v-if="isInputing">
+      <div id="inputTextSvg" width="80%" height="200px"></div>
+      <input type="text" name="diyText" @input="setText"  width="80%" height="200px"/>
+      <button @click="onConfirm"  width="80%" height="200px">确认</button>
+    </div>
     <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
-    <video id="videoel" v-show="!isQrCodeShow" preload="auto" autoPlay></video>
-    <div id="overlay"></div>
-    <div id="paint"></div>
-    <div class="photo-btn" @click="takePhoto" v-if="!hasTookPhoto">
-      <img src="/take-photo.png" alt="拍照按钮" />
-    </div>
-    <!-- <div class="show" v-show="false">
+    <div v-show="!isInputing">
+      <video
+        id="videoel"
+        v-show="!isQrCodeShow"
+        preload="auto"
+        autoPlay
+      ></video>
+      <div id="overlay"></div>
+      <div id="paint"></div>
+      <div class="photo-btn" @click="takePhoto" v-if="!hasTookPhoto">
+        <img src="/take-photo.png" alt="拍照按钮" />
+      </div>
+      <!-- <div class="show" v-show="false">
       <canvas id="canvas" width="1080px" height="1920px" />
     </div> -->
-    <div class="count" v-show="isCountShow">{{ count }}</div>
-    <div class="qrcode-container" v-show="isQrCodeShow">
-      <canvas id="qrcode"></canvas>
-      <p>扫码下载，立即分享</p>
-    </div>
-    <div class="loader" v-if="hasTookPhoto && !isCountShow && !isQrCodeShow">
-      <div class="loader-inner">
-        <div class="loader-line-wrap">
-          <div class="loader-line"></div>
-        </div>
-        <div class="loader-line-wrap">
-          <div class="loader-line"></div>
-        </div>
-        <div class="loader-line-wrap">
-          <div class="loader-line"></div>
-        </div>
-        <div class="loader-line-wrap">
-          <div class="loader-line"></div>
-        </div>
-        <div class="loader-line-wrap">
-          <div class="loader-line"></div>
+      <div class="count" v-show="isCountShow">{{ count }}</div>
+      <div class="qrcode-container" v-show="isQrCodeShow">
+        <canvas id="qrcode"></canvas>
+        <p>扫码下载，立即分享</p>
+      </div>
+      <div class="loader" v-if="hasTookPhoto && !isCountShow && !isQrCodeShow">
+        <div class="loader-inner">
+          <div class="loader-line-wrap">
+            <div class="loader-line"></div>
+          </div>
+          <div class="loader-line-wrap">
+            <div class="loader-line"></div>
+          </div>
+          <div class="loader-line-wrap">
+            <div class="loader-line"></div>
+          </div>
+          <div class="loader-line-wrap">
+            <div class="loader-line"></div>
+          </div>
+          <div class="loader-line-wrap">
+            <div class="loader-line"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -50,15 +62,34 @@ export default {
   // }
   data() {
     return {
+      isInputing: true,
+      // 包含text的svg对象
+      inputTextSvgObj: null,
+      // text元素对象
+      inputTextObj: null,
+      // input的值
+      inputValue: '',
       count: 3,
       isCountShow: false,
       hasTookPhoto: false,
       isQrCodeShow: false,
       videoObj: null,
-      maxHeight: 500
+      maxHeight: 500,
     };
   },
   methods: {
+    setText(){
+      // console.log(e)
+      this.inputValue = document.getElementsByTagName("input")[0].value
+      if(this.inputTextObj != null){
+        this.inputTextObj.clear()
+      }
+      this.inputTextObj = this.inputTextSvgObj.text(this.inputValue)
+    },
+    onConfirm(){
+      this.isInputing = false;
+      // this.setVideoSrc()
+    },
     takePhoto() {
       // this.drawCanvas()
       // 隐藏拍照按钮
@@ -108,7 +139,9 @@ export default {
     },
     drawSvg(xmlDoc) {
       let collection = xmlDoc.getElementsByTagName("rect");
-      let draw = SVG().addTo("#paint").size("100%", "100%");
+      let draw = SVG()
+        .addTo("#paint")
+        .size("100%", "100%");
 
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
@@ -181,7 +214,7 @@ export default {
     },
     setVideoSrc() {
       // 想要获取一个最接近 1280x720 的相机分辨率
-      var constraints = { audio: false, video: { width: 405, height: 720 } };
+      var constraints = { audio: false, video: { width: 270, height: 480 } };
 
       navigator.mediaDevices
         .getUserMedia(constraints)
@@ -192,7 +225,7 @@ export default {
             this.videoObj.play();
           };
         })
-        .catch(function (err) {
+        .catch(function(err) {
           console.log(err.name + ": " + err.message);
         }); // 总是在最后检查错误
     },
@@ -243,7 +276,7 @@ export default {
     makeCode() {
       let qrcode = document.getElementById("qrcode");
       let url = "http://xiaohui.ai";
-      QRCode.toCanvas(qrcode, url, function (error) {
+      QRCode.toCanvas(qrcode, url, function(error) {
         if (error) console.error(error);
         // console.log('success!');
       });
@@ -305,10 +338,11 @@ export default {
       // return objDate;
     },
   },
-  mounted: function () {
+  mounted: function() {
     // let ratio = this.getRatio()
     // console.log(ratio)
     this.videoObj = document.getElementById("videoel");
+    this.inputTextSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
     this.setVideoSrc();
   },
 };
@@ -321,10 +355,35 @@ export default {
   -moz-osx-font-smoothing: grayscale; */
   text-align: center;
   color: #2c3e50;
+  width: 100%;
+  height: 100%;
+  position: absolute;
   /* margin-top: 60px; */
   /* height: 100%;
   width: 100%;
   position: absolute; */
+}
+.input-page{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+.input-page div{
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+.input-page input{
+  display: block;
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+.input-page button{
+  display: block;
+  width: 100%;
+  height: 200px;
+  position: relative;
 }
 #videoel {
   /* -o-transform: scale(-1.2, 1.2);
@@ -348,7 +407,7 @@ export default {
   /* position: fixed;
   left: 0;
   top: 0; */
-  transform: scale(-2.67, 2.67);
+  transform: scale(-4, 4);
   transform-origin: center 0 0;
 }
 .show {

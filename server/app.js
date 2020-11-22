@@ -59,10 +59,10 @@ app.post("/getsvg", function (req, res) {
     const options = {
       shapeTypes: [Geo.ShapeTypes.RECTANGLE],
       candidateShapesPerStep: 50,
-      shapeMutationsPerStep: 100,
+      shapeMutationsPerStep: 10,
       alpha: 128
     }
-    const iterations = 200
+    const iterations = 600
     const svgData = []
     for (var i = 0; i < iterations; i++) {
       //console.log(Geo.SvgExporter.exportShapes(runner.step(options)))
