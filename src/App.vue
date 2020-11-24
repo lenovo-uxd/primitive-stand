@@ -237,7 +237,7 @@ export default {
         ratio1_v +
         "," +
         ratio2_v +
-        ')"><g id="Artboard" transform="translate(-457.000000, -44.000000) rotate(90deg)" fill-opacity="' +
+        ')"><g id="Artboard" transform="translate(-457.000000, -44.000000) rotate(90)" fill-opacity="' +
         fill_opacity +
         '" fill="' +
         fill +
@@ -412,13 +412,15 @@ export default {
   width: 100%;
   height: 100%;
   position: absolute;
+  font-size: 100px;
+  font-weight: 1000;
   /* margin-top: 60px; */
   /* height: 100%;
   width: 100%;
   position: absolute; */
 }
 .input-page{
-  font-size: 100px;
+  /* font-size: 100px; */
   width: 100%;
   height: 100%;
   position: absolute;
