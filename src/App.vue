@@ -98,7 +98,8 @@ export default {
       // console.log(this.textObj.node.getBoundingClientRect())
       let rect = this.textObj.node.getBoundingClientRect()
       this.textWidth = rect.width
-      this.textHeight = rect.height
+      // this.textHeight = rect.height
+      this.textHeight = 100
     },
     onConfirm(){
       this.isInputing = false;
@@ -237,7 +238,7 @@ export default {
         ratio1_v +
         "," +
         ratio2_v +
-        ')"><g id="Artboard" transform="translate(-457.000000, -44.000000) rotate(90)" fill-opacity="' +
+        ')"><g id="Artboard" transform="rotate(90)" fill-opacity="' +
         fill_opacity +
         '" fill="' +
         fill +
@@ -254,7 +255,7 @@ export default {
         ratio1_h +
         "," +
         ratio2_h +
-        ')"><g id="Artboard" transform="translate(-302.000000, -352.000000)" fill-opacity="' +
+        ')"><g id="Artboard" fill-opacity="' +
         fill_opacity +
         '" fill="' +
         fill +
@@ -335,31 +336,6 @@ export default {
         // console.log('success!');
       });
     },
-    getRatio() {
-      let ratio = 0;
-      let screen = window.screen;
-      let ua = navigator.userAgent.toLowerCase();
-      // console.log(window.screen)
-      // console.log(navigator.userAgent.toLowerCase())
-      // console.log(window.devicePixelRatio)
-      // console.log(screen.deviceXDP)
-      // console.log(screen.logicalXDPI)
-      // console.log(window.outerWidth)
-      // console.log(window.innerWidth)
-      if (window.devicePixelRatio !== undefined) {
-        ratio = window.devicePixelRatio;
-      } else if (~ua.indexOf("msie")) {
-        if (screen.deviceXDPI && screen.logicalXDPI) {
-          ratio = screen.deviceXDPI / screen.logicalXDPI;
-        }
-      } else if (
-        window.outerWidth !== undefined &&
-        window.innerWidth !== undefined
-      ) {
-        ratio = window.outerWidth / window.innerWidth;
-      }
-      return ratio;
-    },
     xmlParse(text) {
       let xmlDoc = null;
       let parser = null;
@@ -414,6 +390,7 @@ export default {
   position: absolute;
   font-size: 100px;
   font-weight: 1000;
+  font-family: fantasy;
   /* margin-top: 60px; */
   /* height: 100%;
   width: 100%;
@@ -466,7 +443,7 @@ export default {
   /* position: fixed;
   left: 0;
   top: 0; */
-  transform: scale(-4, 4);
+  transform: scale(4, 4);
   transform-origin: center 0 0;
 }
 .show {
