@@ -173,27 +173,64 @@ export default {
       let fill = collection[i].attributes.fill.value;
       let fill_opacity = collection[i].attributes["fill-opacity"].value;
 
+      
+
       // let ratio1_h = width / 878;
       // let ratio2_h = height / 146;
 
       // let ratio1_v = width / 121;
       // let ratio2_v = height / 722;
 
-      y -= this.textHeight*0.09;
+      // y -= this.textHeight*0.09;
 
       let ratio1_h = width / this.textWidth;
-      let ratio2_h = height / (this.textHeight*0.82);
+      let ratio2_h = height / this.textHeight;
+      // let ratio2_h = height / (this.textHeight*0.82);
 
-      let ratio1_v = width / (this.textHeight*0.82);
+      // let ratio1_v = width / (this.textHeight*0.82);
+      let ratio1_v = width / this.textHeight;
       let ratio2_v = height / this.textWidth;
 
       let ratio = 1920 / this.maxHeight;
       x *= ratio;
       y *= ratio;
+      width *= ratio;
+      height *= ratio;
       ratio1_h *= ratio;
       ratio1_v *= ratio;
       ratio2_h *= ratio;
       ratio2_v *= ratio;
+
+      let rect = draw.rect({
+        width: width,
+        height: height,
+        x: x,
+        y: y
+      })
+      rect.attr("id","rect"+i);
+      rect.attr("fill-opacity",fill_opacity);
+      rect.attr("fill",fill);
+      rect.attr("fill-rule","nonzero");
+      // rect.attr("transform","scale("+ratio+")")
+
+      let group = draw.group()
+      group.attr("id","rect"+i);
+      group.attr("fill-opacity",0.7);
+      group.attr("fill","#ffffff");
+      group.attr("fill-rule","nonzero");
+      // console.log(fill, fill_opacity)
+      // group.attr("style","outline: 1px solid red; overflow: visible;")
+      
+
+      group.plain(this.textObj.text())
+      
+      if(width > height){
+        // 水平
+        group.attr("transform","translate(" + x + "," + (y+height*0.82) + ") scale(" + ratio1_h + "," + ratio2_h + ")");
+      }else{
+        // 垂直
+        group.attr("transform","translate(" + x + "," + y + ") scale(" + ratio1_v + "," + ratio2_v + ") rotate(90)");
+      }
 
       // let rectText_v =
       //   '<g id="rect"' +
@@ -271,24 +308,24 @@ export default {
       // } 
 
       // draw.svg(rectText);
-
-      let group = draw.group()
-      group.attr("id","rect"+i);
-      group.attr("fill-opacity",fill_opacity);
-      group.attr("fill",fill);
-      group.attr("fill-rule","nonzero");
-      // group.attr("style","outline: 1px solid red; overflow: visible;")
+      
+      // let group = draw.group()
+      // group.attr("id","rect"+i);
+      // group.attr("fill-opacity",fill_opacity);
+      // group.attr("fill",fill);
+      // group.attr("fill-rule","nonzero");
+      // // group.attr("style","outline: 1px solid red; overflow: visible;")
       
 
-      group.plain(this.textObj.text())
+      // group.plain(this.textObj.text())
       
-      if(width > height){
-        // 水平
-        group.attr("transform","translate(" + x + "," + y + ") scale(" + ratio1_h + "," + ratio2_h + ")");
-      }else{
-        // 垂直
-        group.attr("transform","translate(" + x + "," + y + ") scale(" + ratio1_v + "," + ratio2_v + ") rotate(90)");
-      }
+      // if(width > height){
+      //   // 水平
+      //   group.attr("transform","translate(" + x + "," + y + ") scale(" + ratio1_h + "," + ratio2_h + ")");
+      // }else{
+      //   // 垂直
+      //   group.attr("transform","translate(" + x + "," + y + ") scale(" + ratio1_v + "," + ratio2_v + ") rotate(90)");
+      // }
     },
     setVideoSrc() {
       // 想要获取一个最接近 1280x720 的相机分辨率
