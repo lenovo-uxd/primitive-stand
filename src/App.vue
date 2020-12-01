@@ -208,15 +208,15 @@ export default {
         y: y
       })
       rect.attr("id","rect"+i);
-      rect.attr("fill-opacity",fill_opacity);
+      rect.attr("fill-opacity",0.2);
       rect.attr("fill",fill);
       rect.attr("fill-rule","nonzero");
       // rect.attr("transform","scale("+ratio+")")
 
       let group = draw.group()
       group.attr("id","rect"+i);
-      group.attr("fill-opacity",0.7);
-      group.attr("fill","#ffffff");
+      group.attr("fill-opacity",fill_opacity);
+      group.attr("fill",fill);
       group.attr("fill-rule","nonzero");
       // console.log(fill, fill_opacity)
       // group.attr("style","outline: 1px solid red; overflow: visible;")
