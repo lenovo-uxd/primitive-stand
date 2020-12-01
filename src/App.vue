@@ -84,7 +84,7 @@ export default {
   methods: {
     setText(){
       // console.log(e)
-      this.inputValue = document.getElementsByTagName("input")[0].value
+      this.inputValue = document.getElementsByTagName("input")[0].value.toUpperCase()
       if(this.textObj == null){
         this.textObj = this.textSvgObj.text(this.inputValue)
       }else{
@@ -277,6 +277,7 @@ export default {
       group.attr("fill-opacity",fill_opacity);
       group.attr("fill",fill);
       group.attr("fill-rule","nonzero");
+      // group.attr("style","outline: 1px solid red; overflow: visible;")
       
 
       group.plain(this.textObj.text())
