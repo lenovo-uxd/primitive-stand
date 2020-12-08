@@ -1,0 +1,21 @@
+1
+fill 0.2
+fill 0.5
+2
+fill 0.2
+fill 0.4+i/length/5
+3
+fill 0.2
+fill 0.5+i/length/2
+4
+fill 0.2
+fill 0.4+Math.random()*0.2
+5
+fill 0.2
+fill 0.4+i/length/2
+6
+fill 0.5
+fill 0.5+i/length/2
+6
+fill 0.3
+fill 0.5+i/length/2
