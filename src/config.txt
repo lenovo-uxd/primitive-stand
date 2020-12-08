@@ -16,6 +16,6 @@ fill 0.4+i/length/2
 6
 fill 0.5
 fill 0.5+i/length/2
-6
+7
 fill 0.3
 fill 0.5+i/length/2

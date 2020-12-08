@@ -220,10 +220,10 @@ export default {
       group.attr("fill-rule", "nonzero");
 
       rect.attr("fill", fill);
-      rect.attr("fill-opacity", 0.3);
+      rect.attr("fill-opacity", 0.1);
 
       group.attr("fill", fill);
-      group.attr("fill-opacity", 0.5 + i / length / 2);
+      group.attr("fill-opacity", 0.4 + i / length / 5);
 
       let text = this.textObj.text() == "" ? "LENOVO" : this.textObj.text();
       group.plain(text);
