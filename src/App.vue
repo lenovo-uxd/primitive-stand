@@ -21,6 +21,9 @@
     <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
     <div v-show="!isInputing">
+      <div class="show" v-show="true">
+        <canvas id="canvas" width="1080px" height="1920px" />
+      </div>
       <video
         id="videoel"
         v-show="!isQrCodeShow"
@@ -32,9 +35,7 @@
       <div class="photo-btn" @click="takePhoto" v-if="!hasTookPhoto">
         <img src="/take-photo.png" alt="拍照按钮" />
       </div>
-      <!-- <div class="show" v-show="false">
-      <canvas id="canvas" width="1080px" height="1920px" />
-    </div> -->
+
       <div class="count" v-show="isCountShow">{{ count }}</div>
       <div class="qrcode-container" v-show="isQrCodeShow">
         <canvas id="qrcode"></canvas>
@@ -67,6 +68,7 @@
 // import HelloWorld from './components/HelloWorld.vue'
 import QRCode from "qrcode";
 import { SVG } from "@svgdotjs/svg.js";
+import { WebGLImageFilter } from './lib/webgl-image-filter'
 
 export default {
   name: "App",
@@ -151,10 +153,11 @@ export default {
 
           // 停止播放视频流并获取当前画面的base64
           this.videoObj.pause();
+          // eslint-disable-next-line no-unused-vars
           let base64 = this.drawCanvas();
           // console.log(base64)
           // 调用api，并绘制svg
-          this.getSvg(base64);
+          // this.getSvg(base64);
         }
       }, 1000);
     },
@@ -306,19 +309,60 @@ export default {
       canvas.width = targetWidth;
       canvas.height = targetHeight;
       context.clearRect(0, 0, targetWidth, targetHeight);
-      //将img绘制到画布上
+      //将img绘制到画布
       context.drawImage(this.videoObj, 0, 0, targetWidth, targetHeight);
 
+      let filter = null;
+      let filteredCanvas = document.getElementById("canvas");
+      try {
+        // in this case, filteredImage is an existing html canvas
+        filter = new WebGLImageFilter({canvas: filteredCanvas});
+        console.log(filter)
+      }
+      catch( err ) {
+        console.log(err)
+       }
+
+      // .. filters setup here
+      // filter.addFilter('hue', 180);
+      filter.addFilter('brightness', 1);
+      // filter.addFilter('saturation', 1);
+      // filter.addFilter('contrast', 1);
+      filter.apply(canvas); 
+      // let filteredImage = filter.apply(canvas); 
+      // console.log(filteredImage)
+
+
+
+      // hue,保留了底层的亮度（luma）和色度（chroma），同时采用了顶层的色调（hue）。
+      // saturation,保留底层的亮度（luma）和色调（hue），同时采用顶层的色度（chroma）。
+      // color,保留了底层的亮度（luma），同时采用了顶层的色调(hue)和色度(chroma)。
+      // luminosity,保持底层的色调（hue）和色度（chroma），同时采用顶层的亮度（luma）。
+
+      // 调整饱和度
+      // context.globalCompositeOperation = "saturation";
+      // context.fillStyle = "hsl(0,10%,50%)";
+      // context.fillRect(0, 0, targetWidth, targetHeight); // apply the comp filter
+      // 调整亮度
+      // context.globalCompositeOperation = "luminosity";
+      // context.fillStyle = "hsl(0,100%,100%)"; 
+      // context.fillRect(0, 0, targetWidth, targetHeight); // apply the comp filter
+      // 调整色调
+      // context.globalCompositeOperation = "hue";
+      // context.fillStyle = "hsl(100%,0,0)"; // saturation at 100%
+      // context.fillRect(0, 0, targetWidth, targetHeight); // apply the comp filter
+
+      // context.globalCompositeOperation = "source-over"; // restore default comp
       // 获取画布上的图像像素矩阵
       // 获取到的数据为一维数组，包含图像的RGBA四个通道数据
-      var imgData = context.getImageData(0,0,canvas.width,canvas.height).data; 
-      console.log(imgData)
+      // var imgData = context.getImageData(0,0,canvas.width,canvas.height).data;
+      // console.log(imgData)
       // var imgArr = [];
       // for (var i = 0; i < imgData.length; i += 4) {
       //   imgArr.push(imgData[i], imgData[i + 1], imgData[i + 2]);
       // }
       // console.log(imgArr)
-      return canvas.toDataURL("image/png", 1);
+      return filteredCanvas.toDataURL("image/png", 1);
     },
     makeCode() {
       let qrcode = document.getElementById("qrcode");
@@ -366,7 +410,7 @@ export default {
 
       reader.onloadend = function () {
         preview.src = reader.result;
-        console.log(preview.src);
+        // console.log(preview.src);
       };
 
       if (file) {
