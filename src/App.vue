@@ -21,7 +21,7 @@
     <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
     <div v-show="!isInputing">
-      <div class="show" v-show="true">
+      <div class="show" v-show="false">
         <canvas id="canvas" width="1080px" height="1920px" />
       </div>
       <video
@@ -68,6 +68,7 @@
 // import HelloWorld from './components/HelloWorld.vue'
 import QRCode from "qrcode";
 import { SVG } from "@svgdotjs/svg.js";
+// eslint-disable-next-line no-unused-vars
 import { WebGLImageFilter } from './lib/webgl-image-filter'
 
 export default {
@@ -157,7 +158,7 @@ export default {
           let base64 = this.drawCanvas();
           // console.log(base64)
           // 调用api，并绘制svg
-          // this.getSvg(base64);
+          this.getSvg(base64);
         }
       }, 1000);
     },
@@ -263,7 +264,7 @@ export default {
     },
     setVideoSrc() {
       // 想要获取一个最接近 1280x720 的相机分辨率
-      var constraints = { audio: false, video: { width: 270, height: 480 } };
+      var constraints = { audio: false, video: { width: 608, height: 1080 } };
 
       navigator.mediaDevices
         .getUserMedia(constraints)
@@ -325,9 +326,9 @@ export default {
 
       // .. filters setup here
       // filter.addFilter('hue', 180);
-      filter.addFilter('brightness', 1);
-      // filter.addFilter('saturation', 1);
-      // filter.addFilter('contrast', 1);
+      filter.addFilter('brightness', 0.2);
+      filter.addFilter('contrast', 0.3);
+      filter.addFilter('saturation', -0.3);
       filter.apply(canvas); 
       // let filteredImage = filter.apply(canvas); 
       // console.log(filteredImage)
@@ -514,7 +515,7 @@ export default {
   /* position: fixed;
   left: 0;
   top: 0; */
-  transform: scale(4, 4);
+  transform: scale(1.78,1.78);
   transform-origin: center 0 0;
 }
 .show {

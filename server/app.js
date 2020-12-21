@@ -58,11 +58,11 @@ app.post("/getsvg", function (req, res) {
     const runner = new Geo.ImageRunner(bitmap)
     const options = {
       shapeTypes: [Geo.ShapeTypes.RECTANGLE],
-      candidateShapesPerStep: 50,
-      shapeMutationsPerStep: 20,
+      candidateShapesPerStep: 1,
+      shapeMutationsPerStep: 58,
       alpha: 128
     }
-    const iterations = 800
+    const iterations = 500
     const svgData = []
     for (var i = 0; i < iterations; i++) {
       //console.log(Geo.SvgExporter.exportShapes(runner.step(options)))
