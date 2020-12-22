@@ -83,9 +83,9 @@ var WebGLImageFilter = window.WebGLImageFilter = function (params) {
 	var _shaderProgramCache = {};
 
 	gl = _canvas.getContext("webgl") || _canvas.getContext("experimental-webgl");
-	console.log(_canvas.getContext("webgl"))
+	// console.log(_canvas.getContext("webgl"))
 	if (!gl) {
-		console.log(gl)
+		// console.log(gl)
 		throw "Couldn't get WebGL context";
 	}
 

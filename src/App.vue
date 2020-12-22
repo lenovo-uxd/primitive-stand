@@ -21,7 +21,7 @@
     <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
     <div v-show="!isInputing">
-      <div class="show" v-show="false">
+      <div class="show" v-show="true">
         <canvas id="canvas" width="1080px" height="1920px" />
       </div>
       <video
@@ -69,7 +69,10 @@
 import QRCode from "qrcode";
 import { SVG } from "@svgdotjs/svg.js";
 // eslint-disable-next-line no-unused-vars
-import { WebGLImageFilter } from './lib/webgl-image-filter'
+import { WebGLImageFilter } from "./lib/webgl-image-filter";
+// import tracking from "./lib/tracking.js";
+import tracking, { ObjectTracker } from './lib/tracking';
+import "./lib/face-min.js";
 
 export default {
   name: "App",
@@ -156,6 +159,7 @@ export default {
           this.videoObj.pause();
           // eslint-disable-next-line no-unused-vars
           let base64 = this.drawCanvas();
+          this.getFaceLocation();
           // console.log(base64)
           // 调用api，并绘制svg
           this.getSvg(base64);
@@ -271,7 +275,7 @@ export default {
         .then((mediaStream) => {
           this.videoObj.srcObject = mediaStream;
           this.videoObj.onloadedmetadata = (e) => {
-            console.log(e);
+            // console.log(e);
             this.videoObj.play();
           };
         })
@@ -305,6 +309,7 @@ export default {
       // 创建画布
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
+      
 
       // 设置宽高度为等同于要压缩图片的尺寸
       canvas.width = targetWidth;
@@ -317,41 +322,18 @@ export default {
       let filteredCanvas = document.getElementById("canvas");
       try {
         // in this case, filteredImage is an existing html canvas
-        filter = new WebGLImageFilter({canvas: filteredCanvas});
-        console.log(filter)
+        filter = new WebGLImageFilter({ canvas: filteredCanvas });
+        // console.log(filter);
+      } catch (err) {
+        console.log(err);
       }
-      catch( err ) {
-        console.log(err)
-       }
 
       // .. filters setup here
       // filter.addFilter('hue', 180);
-      filter.addFilter('brightness', 0.2);
-      filter.addFilter('contrast', 0.3);
-      filter.addFilter('saturation', -0.3);
-      filter.apply(canvas); 
-      // let filteredImage = filter.apply(canvas); 
-      // console.log(filteredImage)
-
-
-
-      // hue,保留了底层的亮度（luma）和色度（chroma），同时采用了顶层的色调（hue）。
-      // saturation,保留底层的亮度（luma）和色调（hue），同时采用顶层的色度（chroma）。
-      // color,保留了底层的亮度（luma），同时采用了顶层的色调(hue)和色度(chroma)。
-      // luminosity,保持底层的色调（hue）和色度（chroma），同时采用顶层的亮度（luma）。
-
-      // 调整饱和度
-      // context.globalCompositeOperation = "saturation";
-      // context.fillStyle = "hsl(0,10%,50%)";
-      // context.fillRect(0, 0, targetWidth, targetHeight); // apply the comp filter
-      // 调整亮度
-      // context.globalCompositeOperation = "luminosity";
-      // context.fillStyle = "hsl(0,100%,100%)"; 
-      // context.fillRect(0, 0, targetWidth, targetHeight); // apply the comp filter
-      // 调整色调
-      // context.globalCompositeOperation = "hue";
-      // context.fillStyle = "hsl(100%,0,0)"; // saturation at 100%
-      // context.fillRect(0, 0, targetWidth, targetHeight); // apply the comp filter
+      filter.addFilter("brightness", 0.2);
+      filter.addFilter("contrast", 0.3);
+      filter.addFilter("saturation", -0.3);
+      filter.apply(canvas);
 
       // context.globalCompositeOperation = "source-over"; // restore default comp
       // 获取画布上的图像像素矩阵
@@ -431,12 +413,80 @@ export default {
         data: JSON.stringify({ data: base64 }),
       };
       this.$ajax(settings).then((res) => {
-        console.log(res);
+        // console.log(res);
         let xmlDoc = this.xmlParse(res.data.data);
         this.drawSvg(xmlDoc);
         // 绘制二维码并显示
         this.makeCode();
         this.isQrCodeShow = true;
+      });
+    },
+    getFaceLocation() {
+      let rect = this.videoObj.getBoundingClientRect();
+      let vid_width = rect.width;
+      let vid_height = rect.height;
+      // 压缩图片
+      // 最大尺寸限制
+      const maxWidth = this.maxHeight;
+      const maxHeight = this.maxHeight;
+      // 需要压缩的目标尺寸
+      let targetWidth = vid_width,
+        targetHeight = vid_height;
+      // 等比例计算超过最大限制时缩放后的图片尺寸
+      if (vid_width > maxWidth || vid_height > maxHeight) {
+        if (vid_width / vid_height > 1) {
+          // 宽图片
+          targetWidth = maxWidth;
+          targetHeight = Math.round(maxWidth * (vid_height / vid_width));
+        } else {
+          // 高图片
+          targetHeight = maxHeight;
+          targetWidth = Math.round(maxHeight * (vid_width / vid_height));
+        }
+      }
+      // 创建画布
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      
+
+      // 设置宽高度为等同于要压缩图片的尺寸
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      context.clearRect(0, 0, targetWidth, targetHeight);
+      //将img绘制到画布
+      context.drawImage(document.getElementById('canvas'), 0, 0, targetWidth, targetHeight);
+
+      var tracker = new window.tracking.ObjectTracker("face");
+      // const tracker = new window.tracking.ObjectTracker("face");
+      tracker.setStepSize(1.7);
+      // console.log(img)
+      tracking.track(canvas, tracker);
+
+      tracker.on('track', function(event) {
+        event.data.forEach(function(rect) {
+          console.log(rect)
+          // window.plot(rect.x, rect.y, rect.width, rect.height);
+        });
+      });
+    },
+    getCompetence() {
+      let flag = true;
+      const _this = this;
+      const canvas = document.getElementById("canvas");
+      const context = canvas.getContext("2d");
+
+      const tracker = new window.tracking.ObjectTracker("face");
+      tracker.setInitialScale(4);
+      tracker.setStepSize(2);
+      tracker.setEdgesDensity(0.1);
+      // 启动摄像头初始化
+      this.trackerTask = window.tracking.track("#canvas", tracker);
+      tracker.on("track", function (event) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        event.data.forEach(function (rect) {
+          context.strokeStyle = "#ff0000";
+          context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+        });
       });
     },
   },
@@ -515,7 +565,7 @@ export default {
   /* position: fixed;
   left: 0;
   top: 0; */
-  transform: scale(1.78,1.78);
+  transform: scale(1.78, 1.78);
   transform-origin: center 0 0;
 }
 .show {
