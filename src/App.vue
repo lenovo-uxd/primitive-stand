@@ -1,6 +1,27 @@
 <template>
   <div id="app">
-    <div class="input-page" v-if="isInputing">
+    <!-- <div class="bg">
+      <img src="/picture/background@x3.png" alt="背景图"/>
+    </div> -->
+    <div class="welcome" v-if="pageIndex == 0">
+      <img class="title" src="/picture/title0@x3.png" alt="magic draw"/>
+      <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
+      <img class="decor" src="/picture/decoration1@x3.png" alt="decoration"/>
+      <img class="bottom-info" src="/picture/infobottom1@x3.png" alt="info bottom"/>
+      <img class="btn" src='/picture/try-normal@x3.png' alt="try now"/>
+    </div>
+    <div class="shoot" v-if="pageIndex >= 1 && pageIndex <= 4">
+      <img class="title" :src="'/picture/title'+pageIndex+'@x3.png'" alt="magic draw"/>
+      <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
+      <img class="btn" :src="'/picture/btn'+pageIndex+'@x3.png'" alt="button"/>
+      <img class="bottom-info" src="/picture/infobottom1@x3.png" alt="info bottom"/>
+    </div>
+    <div class="thanks" v-if="pageIndex == 5">
+      <img src="/picture/title5@x3.png" alt="magic draw"/>
+      <img src="/picture/machine@x3.png" alt="machine"/>
+      <img src='/picture/trynormal@x3.png' alt="try now"/>
+    </div>
+    <!-- <div class="input-page" v-if="isInputing">
       <div id="inputTextSvg" width="80%" height="200px"></div>
       <p>width:{{ textWidth }}</p>
       <p>height:{{ textHeight }}</p>
@@ -18,8 +39,6 @@
         <button @click="onConfirm2">确认</button>
       </div>
     </div>
-    <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
-    <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
     <div v-show="!isInputing">
       <div class="show" v-show="true">
         <canvas id="canvas" width="1080px" height="1920px" />
@@ -60,7 +79,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -81,6 +100,7 @@ export default {
   // }
   data() {
     return {
+      pageIndex: 0,
       isInputing: true,
       // 包含text的svg对象
       textSvgObj: null,
@@ -493,9 +513,9 @@ export default {
   mounted: function () {
     // let ratio = this.getRatio()
     // console.log(ratio)
-    this.videoObj = document.getElementById("videoel");
-    this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
-    this.setVideoSrc();
+    // this.videoObj = document.getElementById("videoel");
+    // this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
+    // this.setVideoSrc();
   },
 };
 </script>
@@ -513,6 +533,7 @@ export default {
   font-size: 100px;
   font-weight: bold;
   font-family: fantasy;
+  background: transparent url(/picture/background@x3.png) center center no-repeat;
   /* margin-top: 60px; */
   /* height: 100%;
   width: 100%;
@@ -729,5 +750,48 @@ export default {
   100% {
     transform: rotate(360deg);
   }
+}
+body{
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.welcome{
+  width: 100%;
+  height: 100%;
+}
+.welcome .title{
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+  /* width: 1080px; */
+  /* height: 324px; */
+}
+.welcome .machine{
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+}
+.welcome .decor{
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+}
+.welcome .btn{
+  width: 68.8%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 18%;
+  left: 15.6%;
+}
+.welcome .bottom-info{
+  width: 29.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 5%;
+  left: 35%;
 }
 </style>
