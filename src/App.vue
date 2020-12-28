@@ -11,7 +11,8 @@
       <img class="btn" @click="next" src='/picture/try-normal@x3.png' alt="try now"/>
     </div>
     <div class="shoot" v-show="pageIndex >= 1 && pageIndex <= 4">
-      <div class="show" v-show="true">
+      <div id="inputTextSvg" width="80%" height="200px"></div>
+      <div class="show" v-show="false">
         <canvas id="canvas" width="1080px" height="1920px" />
       </div>
       <video
@@ -19,55 +20,32 @@
         preload="auto"
         autoPlay
       ></video>
-      <div id="overlay"></div>
-      <div id="paint"></div>
       <img class="title" :src="'/picture/title'+pageIndex+'@x3.png'" alt="magic draw"/>
       <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
+      <img class="count" v-if="count<=3 && count >= 1" :src="'/picture/count'+count+'@x3.png'"/>
+      <div id="overlay"></div>
+      <div class="input-container" v-show="pageIndex == 3">
+        <input
+          :value="input"
+          class="input"
+          @input="onInputChange"
+          placeholder="输入名字"
+        >
+        <SimpleKeyboard @onChange="onChange" @onKeyPress="onKeyPress" :input="input"/>
+      </div>
       <img class="btn"  @click="next" :src="'/picture/btn'+pageIndex+'@x3.png'" alt="button"/>
       <img class="back-btn"  @click="back" src="/picture/back-normal@x3.png" alt="button"/>
       <img class="bottom-info" src="/picture/infobottom1@x3.png" alt="info bottom"/>
     </div>
+    <div id="paint" v-if="pageIndex >= 4" :style="pageIndex==5?'transform: scale(0.8); transform-origin: 50% 80%;':''"></div>
     <div class="thanks" v-if="pageIndex == 5">
       <img class="title" src="/picture/title5@x3.png" alt="magic draw"/>
       <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
       <img class="btn"  @click="next" src='/picture/try-normal@x3.png' alt="try now"/>
       <img class="bottom-info" src="/picture/infobottom2@x3.png" alt="info bottom"/>
     </div>
-    <!-- <div class="input-page" v-if="isInputing">
-      <div id="inputTextSvg" width="80%" height="200px"></div>
-      <p>width:{{ textWidth }}</p>
-      <p>height:{{ textHeight }}</p>
-      <input
-        type="text"
-        name="diyText"
-        @input="setText"
-        placeholder="请输入自定义字符"
-      />
-      <button @click="onConfirm">确认</button>
-      <br /><br /><br /><br />
-      <div class="input-file">
-        <input type="file" @change="previewFile" /><br />
-        <img src="" height="200" /><br />
-        <button @click="onConfirm2">确认</button>
-      </div>
-    </div>
-    <div v-show="!isInputing">
-      <div class="show" v-show="true">
-        <canvas id="canvas" width="1080px" height="1920px" />
-      </div>
-      <video
-        id="videoel"
-        v-show="!isQrCodeShow"
-        preload="auto"
-        autoPlay
-      ></video>
-      <div id="overlay"></div>
-      <div id="paint"></div>
-      <div class="photo-btn" @click="takePhoto" v-if="!hasTookPhoto">
-        <img src="/take-photo.png" alt="拍照按钮" />
-      </div>
-
-      <div class="count" v-show="isCountShow">{{ count }}</div>
+    
+    <!--
       <div class="qrcode-container" v-show="isQrCodeShow">
         <canvas id="qrcode"></canvas>
         <p>扫码下载，立即分享</p>
@@ -96,7 +74,7 @@
 </template>
 
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
+import SimpleKeyboard from './components/SimpleKeyboard.vue'
 import QRCode from "qrcode";
 import { SVG } from "@svgdotjs/svg.js";
 // eslint-disable-next-line no-unused-vars
@@ -107,9 +85,9 @@ import "./lib/face-min.js";
 
 export default {
   name: "App",
-  // components: {
-  //   HelloWorld
-  // }
+  components: {
+    SimpleKeyboard
+  },
   data() {
     return {
       pageIndex: 0,
@@ -121,20 +99,41 @@ export default {
       textWidth: 0,
       textHeight: 0,
       // input的值
-      inputValue: "",
-      count: 3,
-      isCountShow: false,
-      hasTookPhoto: false,
-      isQrCodeShow: false,
+      input: "",
+      count: 4,
       videoObj: null,
       maxHeight: 500,
+      xmlDoc: null,
     };
   },
   methods: {
     next(){
       this.pageIndex += 1;
       if(this.pageIndex >= 6){
+        // document.getElementById("draw").remove();
+        // document.getElementById("videoel").style.display="block";
+        location.reload();
         this.pageIndex -= 6;
+      }
+      switch(this.pageIndex){
+        case 2:{
+          this.takePhoto()
+          break
+        }
+        case 3:{
+          // 显示键盘，输入文字
+        }
+        case 4:{
+          this.drawSvg();
+          break
+        }
+        case 5:{
+          let paint = document.getElementById("paint")
+          paint.style="transform: scale(0.8); transform-origin: 50% 80%;"
+          // 绘制二维码并显示
+          this.makeCode();
+          break
+        }
       }
       // document.getElementsByClassName("machine")[0].style="transform: scale(1.22)"
     },
@@ -143,14 +142,14 @@ export default {
     },
     setText() {
       // console.log(e)
-      this.inputValue = document
-        .getElementsByTagName("input")[0]
-        .value.toUpperCase();
+      // this.input = document
+      //   .getElementsByTagName("input")[0]
+      //   .value.toUpperCase();
       if (this.textObj == null) {
-        this.textObj = this.textSvgObj.text(this.inputValue);
+        this.textObj = this.textSvgObj.text(this.input);
       } else {
         this.textObj.clear();
-        this.textObj.text(this.inputValue);
+        this.textObj.text(this.input);
       }
 
       // console.log(this.textObj.node.outerHTML)
@@ -162,25 +161,10 @@ export default {
       this.textHeight = rect.height;
       // this.textHeight = 100
     },
-    onConfirm() {
-      this.isInputing = false;
-      // this.setVideoSrc()
-    },
-    onConfirm2() {
-      this.isInputing = false;
-      this.hasTookPhoto = true;
-      this.isCountShow = false;
-      this.videoObj.style.display = "none";
-      let base64 = document.querySelector("img").src;
-      this.getSvg(base64);
-      // this.setVideoSrc()
-    },
     takePhoto() {
-      // this.drawCanvas()
-      // 隐藏拍照按钮
-      this.hasTookPhoto = true;
+      // this.drawPhoto()
       // 显示倒计时
-      this.isCountShow = true;
+      this.count = 3;
       // 更新倒计时
       let intervalId = setInterval(() => {
         this.count -= 1;
@@ -190,33 +174,42 @@ export default {
           overlay.style.display = "block";
           setTimeout(() => {
             overlay.style.display = "none";
-          }, 150);
+          }, 500);
 
           // 停止倒计时
-          this.isCountShow = false;
           clearInterval(intervalId);
-          this.count = 3;
+          this.count = 4;
 
           // 停止播放视频流并获取当前画面的base64
           this.videoObj.pause();
           // eslint-disable-next-line no-unused-vars
-          let base64 = this.drawCanvas();
+          let base64 = this.drawPhoto();
           this.getFaceLocation();
           // console.log(base64)
           // 调用api，并绘制svg
           this.getSvg(base64);
+          this.next()
         }
       }, 1000);
     },
-    drawSvg(xmlDoc) {
-      let collection = xmlDoc.getElementsByTagName("rect");
+    drawSvg() {
+      // 如果数据还没获取到，每0.5s尝试一次
+      if(this.xmlDoc == null){
+        setTimeout(()=>{
+          this.drawSvg()
+        },500)
+        return
+      }
+      let collection = this.xmlDoc.getElementsByTagName("rect");
       let draw = SVG().addTo("#paint").size("100%", "100%");
-
+      draw.attr("id","draw")
+      document.getElementById("videoel").style.display="none";
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
           this.addRect(draw, collection, i);
         }, 50 * i);
       }
+      this.xmlDoc = null;
     },
     addRect(draw, collection, i) {
       // console.log(i)
@@ -246,7 +239,7 @@ export default {
       let ratio1_v = width / this.textHeight;
       let ratio2_v = height / this.textWidth;
 
-      let ratio = 1920 / this.maxHeight;
+      let ratio = 1150 / this.maxHeight;
       x *= ratio;
       y *= ratio;
       width *= ratio;
@@ -275,7 +268,7 @@ export default {
       group.attr("fill", fill);
       group.attr("fill-opacity", 0.4 + i / length / 5);
 
-      let text = this.textObj.text() == "" ? "LENOVO" : this.textObj.text();
+      let text = this.textObj == null ? "LENOVO" : this.textObj.text();
       group.plain(text);
 
       if (width > height) {
@@ -310,7 +303,7 @@ export default {
     },
     setVideoSrc() {
       // 想要获取一个最接近 1280x720 的相机分辨率
-      var constraints = { audio: false, video: { width: 608, height: 1080 } };
+      var constraints = { audio: false, video: { width: 810, height: 1080 } };
 
       navigator.mediaDevices
         .getUserMedia(constraints)
@@ -325,7 +318,7 @@ export default {
           console.log(err.name + ": " + err.message);
         }); // 总是在最后检查错误
     },
-    drawCanvas() {
+    drawPhoto() {
       let rect = this.videoObj.getBoundingClientRect();
       let vid_width = rect.width;
       let vid_height = rect.height;
@@ -336,6 +329,7 @@ export default {
       // 需要压缩的目标尺寸
       let targetWidth = vid_width,
         targetHeight = vid_height;
+      // console.log(targetWidth,targetHeight)
       // 等比例计算超过最大限制时缩放后的图片尺寸
       if (vid_width > maxWidth || vid_height > maxHeight) {
         if (vid_width / vid_height > 1) {
@@ -352,7 +346,6 @@ export default {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
       
-
       // 设置宽高度为等同于要压缩图片的尺寸
       canvas.width = targetWidth;
       canvas.height = targetHeight;
@@ -363,30 +356,18 @@ export default {
       let filter = null;
       let filteredCanvas = document.getElementById("canvas");
       try {
-        // in this case, filteredImage is an existing html canvas
         filter = new WebGLImageFilter({ canvas: filteredCanvas });
-        // console.log(filter);
       } catch (err) {
         console.log(err);
       }
 
-      // .. filters setup here
+      // 调整图像参数
       // filter.addFilter('hue', 180);
       filter.addFilter("brightness", 0.2);
       filter.addFilter("contrast", 0.3);
       filter.addFilter("saturation", -0.3);
       filter.apply(canvas);
 
-      // context.globalCompositeOperation = "source-over"; // restore default comp
-      // 获取画布上的图像像素矩阵
-      // 获取到的数据为一维数组，包含图像的RGBA四个通道数据
-      // var imgData = context.getImageData(0,0,canvas.width,canvas.height).data;
-      // console.log(imgData)
-      // var imgArr = [];
-      // for (var i = 0; i < imgData.length; i += 4) {
-      //   imgArr.push(imgData[i], imgData[i + 1], imgData[i + 2]);
-      // }
-      // console.log(imgArr)
       return filteredCanvas.toDataURL("image/png", 1);
     },
     makeCode() {
@@ -456,11 +437,7 @@ export default {
       };
       this.$ajax(settings).then((res) => {
         // console.log(res);
-        let xmlDoc = this.xmlParse(res.data.data);
-        this.drawSvg(xmlDoc);
-        // 绘制二维码并显示
-        this.makeCode();
-        this.isQrCodeShow = true;
+        this.xmlDoc = this.xmlParse(res.data.data);
       });
     },
     getFaceLocation() {
@@ -531,12 +508,23 @@ export default {
         });
       });
     },
+    onChange(input) {
+      this.input = input;
+      this.setText()
+    },
+    onKeyPress(button) {
+      console.log("button", button);
+    },
+    onInputChange(input) {
+      this.input = input.target.value;
+      this.setText()
+    }
   },
   mounted: function () {
     // let ratio = this.getRatio()
     // console.log(ratio)
     this.videoObj = document.getElementById("videoel");
-    // this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
+    this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
     this.setVideoSrc();
   },
 };
@@ -572,12 +560,10 @@ export default {
   height: 200px;
   position: relative;
 }
-.input-page input {
-  /* display: block; */
-  width: 71%;
-  height: 100px;
-  font-size: 62px;
-  position: relative;
+.shoot #inputTextSvg {
+  position: fixed;
+  bottom: 10%;
+  left: 11%;
 }
 .input-page button {
   /* display: block; */
@@ -587,67 +573,31 @@ export default {
   position: relative;
 }
 #videoel {
-  /* -o-transform: scale(-1.2, 1.2);
-  -webkit-transform: scale(-1.2, 1.2);
-  transform: scale(-1.2, 1.2);
-  -ms-filter: fliph;
-  filter: fliph; */
-  /* position: absolute;
-  width: 1280px;
-  height: 720px;
-  left: 0;
-  top: 0;
-  object-fit: fill;
-  z-index: 0;
-  transform: scale(4.7); */
-  /*IE*/
-  /*visibility: hidden;*/
-  /* display: none; */
-  /* position: relative;
-  top:70px; */
-  /* position: fixed;
-  left: 0;
-  top: 0; */
-  transform: scale(1.78, 1.78);
-  transform-origin: center 0 0;
+  transform: scale(1.065);
+  transform-origin: 50% -250%;
 }
 .show {
   position: fixed;
   left: 0;
   top: 0;
-  width: 1080px;
-  height: 1920px;
+  width: 862px;
+  height: 1150px;
 }
 #canvas {
-  width: 1080px;
-  height: 1920px;
+  width: 862px;
+  height: 1150px;
 }
 #overlay {
   position: fixed;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  top: 0;
-  background: rgba(255, 255, 255, 0.3);
+  width: 862px;
+  height: 1150px;
+  left: 10.09%;
+  top: 10%;
+  background: rgba(255, 255, 255, 0.5);
   display: none;
   /* z-index: 10; */
 }
-.photo-btn {
-  position: fixed;
-  bottom: 10%;
-  width: 100%;
-  /* height: 100px; */
-  /* fill: antiquewhite; */
-  text-align: center;
-}
-.count {
-  position: fixed;
-  top: 30%;
-  font-size: 500px;
-  color: rgb(190, 11, 11);
-  text-align: center;
-  width: 100%;
-}
+
 .qrcode-container {
   position: fixed;
   right: 20px;
@@ -665,10 +615,10 @@ export default {
 }
 #paint {
   position: fixed;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  top: 0;
+  width: 79.815%;
+  height: 59.896%;
+  left: 10.09%;
+  top: 10%;
 }
 .loader {
   /* background: #000; */
@@ -837,6 +787,34 @@ body{
   transform: scale(1.22);
   transform-origin: 50% 58%;
 }
+.shoot .count {
+  position: fixed;
+  height: 20.26%;
+  top: 28%;
+  left: 40.555%;
+}
+
+.shoot .input-container{
+  position: fixed;
+  width: 79.815%;
+  left: 10.09%;
+  bottom: 30%;
+}
+input {
+  text-align: center;
+  width: 100%;
+  height: 200px;
+  padding: 20px;
+  font-size: 80px;
+  border: none;
+  box-sizing: border-box;
+}
+
+.simple-keyboard {
+  font-size: 32px;
+  max-width: 100%;
+}
+
 .shoot .btn{
   width: 64.86%;
   /* height: 134px; */
