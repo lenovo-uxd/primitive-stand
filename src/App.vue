@@ -8,18 +8,30 @@
       <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
       <img class="decor" src="/picture/decoration1@x3.png" alt="decoration"/>
       <img class="bottom-info" src="/picture/infobottom1@x3.png" alt="info bottom"/>
-      <img class="btn" src='/picture/try-normal@x3.png' alt="try now"/>
+      <img class="btn" @click="next" src='/picture/try-normal@x3.png' alt="try now"/>
     </div>
-    <div class="shoot" v-if="pageIndex >= 1 && pageIndex <= 4">
+    <div class="shoot" v-show="pageIndex >= 1 && pageIndex <= 4">
+      <div class="show" v-show="true">
+        <canvas id="canvas" width="1080px" height="1920px" />
+      </div>
+      <video
+        id="videoel"
+        preload="auto"
+        autoPlay
+      ></video>
+      <div id="overlay"></div>
+      <div id="paint"></div>
       <img class="title" :src="'/picture/title'+pageIndex+'@x3.png'" alt="magic draw"/>
       <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
-      <img class="btn" :src="'/picture/btn'+pageIndex+'@x3.png'" alt="button"/>
+      <img class="btn"  @click="next" :src="'/picture/btn'+pageIndex+'@x3.png'" alt="button"/>
+      <img class="back-btn"  @click="back" src="/picture/back-normal@x3.png" alt="button"/>
       <img class="bottom-info" src="/picture/infobottom1@x3.png" alt="info bottom"/>
     </div>
     <div class="thanks" v-if="pageIndex == 5">
-      <img src="/picture/title5@x3.png" alt="magic draw"/>
-      <img src="/picture/machine@x3.png" alt="machine"/>
-      <img src='/picture/trynormal@x3.png' alt="try now"/>
+      <img class="title" src="/picture/title5@x3.png" alt="magic draw"/>
+      <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
+      <img class="btn"  @click="next" src='/picture/try-normal@x3.png' alt="try now"/>
+      <img class="bottom-info" src="/picture/infobottom2@x3.png" alt="info bottom"/>
     </div>
     <!-- <div class="input-page" v-if="isInputing">
       <div id="inputTextSvg" width="80%" height="200px"></div>
@@ -119,6 +131,16 @@ export default {
     };
   },
   methods: {
+    next(){
+      this.pageIndex += 1;
+      if(this.pageIndex >= 6){
+        this.pageIndex -= 6;
+      }
+      // document.getElementsByClassName("machine")[0].style="transform: scale(1.22)"
+    },
+    back(){
+      this.pageIndex -= 1;
+    },
     setText() {
       // console.log(e)
       this.inputValue = document
@@ -513,9 +535,9 @@ export default {
   mounted: function () {
     // let ratio = this.getRatio()
     // console.log(ratio)
-    // this.videoObj = document.getElementById("videoel");
+    this.videoObj = document.getElementById("videoel");
     // this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
-    // this.setVideoSrc();
+    this.setVideoSrc();
   },
 };
 </script>
@@ -635,7 +657,7 @@ export default {
 }
 .qrcode-container p {
   font-size: 25px;
-  margin-block-start: 0;
+  margin-block-next: 0;
 }
 #qrcode {
   width: 300px !important;
@@ -788,6 +810,80 @@ body{
   left: 15.6%;
 }
 .welcome .bottom-info{
+  width: 29.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 5%;
+  left: 35%;
+}
+.shoot{
+  width: 100%;
+  height: 100%;
+}
+.shoot .title{
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+  /* width: 1080px; */
+  /* height: 324px; */
+}
+.shoot .machine{
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+  transition: all 5s ease-out;
+  transform: scale(1.22);
+  transform-origin: 50% 58%;
+}
+.shoot .btn{
+  width: 64.86%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 12.8%;
+  left: 27.2%;
+}
+.shoot .back-btn{
+  width: 19.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 12.8%;
+  left: 7.5%;
+}
+.shoot .bottom-info{
+  width: 29.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 1.6%;
+  left: 35%;
+}
+.thanks{
+  width: 100%;
+  height: 100%;
+}
+.thanks .title{
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+  /* width: 1080px; */
+  /* height: 324px; */
+}
+.thanks .machine{
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+}
+.thanks .btn{
+  width: 68.8%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 18%;
+  left: 15.6%;
+}
+.thanks .bottom-info{
   width: 29.54%;
   /* height: 134px; */
   position: fixed;
