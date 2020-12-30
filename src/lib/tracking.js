@@ -166,7 +166,7 @@
    * @private
    */
   tracking.trackCanvas_ = function(element, tracker) {
-    console.log(element)
+    // console.log(element)
     var self = this;
     var task = new tracking.TrackerTask(tracker);
     task.on('run', function() {
@@ -189,8 +189,8 @@
     var width = element.width;
     var height = element.height;
     var context = element.getContext('2d');
-    console.log(element)
-    console.log(context)
+    // console.log(element)
+    // console.log(context)
     var imageData = context.getImageData(0, 0, width, height);
     tracker.track(imageData.data, width, height);
   };
