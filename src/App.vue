@@ -12,7 +12,7 @@
     </div>
     <div class="shoot" v-show="pageIndex >= 1 && pageIndex <= 4">
       <div id="inputTextSvg" width="80%" height="200px"></div>
-      <div class="show" v-show="false">
+      <div class="show" v-show="true">
         <canvas id="canvas" width="1080px" height="1920px" />
       </div>
       <video
@@ -37,11 +37,14 @@
       <img class="back-btn"  @click="back" src="/picture/back-normal@x3.png" alt="button"/>
       <img class="bottom-info" src="/picture/infobottom1@x3.png" alt="info bottom"/>
     </div>
-    <div id="paint" v-if="pageIndex >= 4" :style="pageIndex==5?'transform: scale(0.8); transform-origin: 50% 80%;':''"></div>
-    <div class="thanks" v-if="pageIndex == 5">
+    <div id="paint" v-if="pageIndex >= 4" :style="pageIndex==5?'transform: scale(0.8); transform-origin: 50% 35%;':''"></div>
+    <div class="thanks" v-show="pageIndex == 5">
       <img class="title" src="/picture/title5@x3.png" alt="magic draw"/>
       <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
       <img class="btn"  @click="next" src='/picture/try-normal@x3.png' alt="try now"/>
+      <!-- <div class="qrcode-container"> -->
+        <canvas id="qrcode"></canvas>
+      <!-- </div> -->
       <img class="bottom-info" src="/picture/infobottom2@x3.png" alt="info bottom"/>
     </div>
     
@@ -139,6 +142,10 @@ export default {
     },
     back(){
       this.pageIndex -= 1;
+      if(this.pageIndex == 2){
+        this.pageIndex -=1;
+        document.getElementById("videoel").play()
+      }
     },
     setText() {
       // console.log(e)
@@ -152,10 +159,6 @@ export default {
         this.textObj.text(this.input);
       }
 
-      // console.log(this.textObj.node.outerHTML)
-      // console.log(this.textObj.path())
-      // console.log(this.textObj.textPath())
-      // console.log(this.textObj.node.getBoundingClientRect())
       let rect = this.textObj.node.getBoundingClientRect();
       this.textWidth = rect.width;
       this.textHeight = rect.height;
@@ -206,6 +209,7 @@ export default {
       document.getElementById("videoel").style.display="none";
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
+          document.getElementsByClassName("show")[0].style.opacity=i/collection.length;
           this.addRect(draw, collection, i);
         }, 50 * i);
       }
@@ -372,6 +376,7 @@ export default {
     },
     makeCode() {
       let qrcode = document.getElementById("qrcode");
+      // console.log(qrcode)
       let url = "http://xiaohui.ai";
       QRCode.toCanvas(qrcode, url, function (error) {
         if (error) console.error(error);
@@ -509,13 +514,14 @@ export default {
       });
     },
     onChange(input) {
-      this.input = input;
+      this.input = input.toUpperCase();
       this.setText()
     },
     onKeyPress(button) {
       console.log("button", button);
     },
     onInputChange(input) {
+      // this.input = input.target.value.toUpperCase();
       this.input = input.target.value;
       this.setText()
     }
@@ -578,10 +584,11 @@ export default {
 }
 .show {
   position: fixed;
-  left: 0;
-  top: 0;
+  left: 10.09%;
+  top: 10%;
   width: 862px;
   height: 1150px;
+  opacity: 0;
 }
 #canvas {
   width: 862px;
@@ -610,8 +617,12 @@ export default {
   margin-block-next: 0;
 }
 #qrcode {
-  width: 300px !important;
-  height: 300px !important;
+  position: fixed;
+  /* display: inline; */
+  left: 40.74%;
+  bottom: 4%;
+  width: 200px !important;
+  height: 200px !important;
 }
 #paint {
   position: fixed;
@@ -850,7 +861,7 @@ input {
 }
 .thanks .machine{
   position: fixed;
-  top: 0;
+  top: -5%;
   display: block;
   width: 100%;
 }
@@ -858,14 +869,14 @@ input {
   width: 68.8%;
   /* height: 134px; */
   position: fixed;
-  bottom: 18%;
+  bottom: 23%;
   left: 15.6%;
 }
 .thanks .bottom-info{
-  width: 29.54%;
+  width: 19.23%;
   /* height: 134px; */
   position: fixed;
-  bottom: 5%;
-  left: 35%;
+  bottom: 1.5%;
+  left: 40.385%;
 }
 </style>
