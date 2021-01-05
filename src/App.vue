@@ -1,95 +1,102 @@
 <template>
   <div id="app">
-    <!-- <div class="bg">
-      <img src="/picture/background@x3.png" alt="背景图"/>
-    </div> -->
-    <div class="welcome" v-if="pageIndex == 0">
-      <img class="title" src="/picture/title0@x3.png" alt="magic draw"/>
-      <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
-      <img class="decor" src="/picture/decoration1@x3.png" alt="decoration"/>
-      <img class="bottom-info" src="/picture/infobottom1@x3.png" alt="info bottom"/>
-      <img class="btn" @click="next" src='/picture/try-normal@x3.png' alt="try now"/>
+    <div id="inputTextSvg" width="80%" height="200px"></div>
+    <div v-show="pageIndex >= 1 && pageIndex <= 4" class="show">
+      <canvas id="canvas" width="1080px" height="1920px" />
     </div>
-    <div class="shoot" v-show="pageIndex >= 1 && pageIndex <= 4">
-      <div id="inputTextSvg" width="80%" height="200px"></div>
-      <div class="show" v-show="true">
-        <canvas id="canvas" width="1080px" height="1920px" />
-      </div>
-      <video
-        id="videoel"
-        preload="auto"
-        autoPlay
-      ></video>
-      <img class="title" :src="'/picture/title'+pageIndex+'@x3.png'" alt="magic draw"/>
-      <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
-      <img class="count" v-if="count<=3 && count >= 1" :src="'/picture/count'+count+'@x3.png'"/>
-      <div id="overlay"></div>
-      <div class="input-container" v-show="pageIndex == 3">
-        <input
-          :value="input"
-          class="input"
-          @input="onInputChange"
-          placeholder="输入名字"
-        >
-        <SimpleKeyboard @onChange="onChange" @onKeyPress="onKeyPress" :input="input"/>
-      </div>
-      <img class="btn"  @click="next" :src="'/picture/btn'+pageIndex+'@x3.png'" alt="button"/>
-      <img class="back-btn"  @click="back" src="/picture/back-normal@x3.png" alt="button"/>
-      <img class="bottom-info" src="/picture/infobottom1@x3.png" alt="info bottom"/>
+    <video
+      id="videoel"
+      preload="auto"
+      autoPlay
+      v-show="pageIndex >= 1 && pageIndex <= 4"
+    ></video>
+    <img
+      class="title"
+      :src="'/picture/title' + pageIndex + '@x3.png'"
+      alt="magic draw"
+    />
+    <div
+      id="paint"
+      v-if="pageIndex >= 4"
+      :style="
+        pageIndex == 5
+          ? 'transform: scale(0.8); transform-origin: 50% 35%;'
+          : ''
+      "
+    ></div>
+    <img
+      :class="'machine' + pageIndex"
+      src="/picture/machine@x3.png"
+      alt="machine"
+    />
+    <img
+      class="count"
+      v-if="count <= 3 && count >= 1"
+      :src="'/picture/count' + count + '@x3.png'"
+    />
+    <div id="overlay"></div>
+    <div class="input-container" v-show="pageIndex == 3">
+      <input
+        :value="input"
+        class="input"
+        @input="onInputChange"
+        placeholder="输入名字"
+      />
+      <SimpleKeyboard
+        @onChange="onChange"
+        @onKeyPress="onKeyPress"
+        :input="input"
+      />
     </div>
-    <div id="paint" v-if="pageIndex >= 4" :style="pageIndex==5?'transform: scale(0.8); transform-origin: 50% 35%;':''"></div>
-    <div class="thanks" v-show="pageIndex == 5">
-      <img class="title" src="/picture/title5@x3.png" alt="magic draw"/>
-      <img class="machine" src="/picture/machine@x3.png" alt="machine"/>
-      <img class="btn"  @click="next" src='/picture/try-normal@x3.png' alt="try now"/>
-      <!-- <div class="qrcode-container"> -->
-        <canvas id="qrcode"></canvas>
-      <!-- </div> -->
-      <img class="bottom-info" src="/picture/infobottom2@x3.png" alt="info bottom"/>
+
+    <img
+      class="back-btn"
+      v-show="pageIndex >= 1 && pageIndex <= 4"
+      @click="back"
+      src="/picture/back-normal@x3.png"
+      alt="button"
+    />
+    <img
+      class="decor"
+      v-if="pageIndex == 0"
+      src="/picture/decoration1@x3.png"
+      alt="decoration"
+    />
+    <img
+      :class="'bottom-info' + pageIndex"
+      :src="'/picture/infobottom' + pageIndex + '@x3.png'"
+      alt="info bottom"
+    />
+    <canvas v-show="pageIndex == 5" id="qrcode"></canvas>
+    <img
+      :class="'btn' + pageIndex"
+      @click="next"
+      :src="'/picture/btn' + pageIndex + '@x3.png'"
+      alt="button"
+    />
+    <div v-show="false">
+      <audio id="button-audio" src="/audio/button.mp3" preload />
+      <audio id="count-audio" src="/audio/count.mp3" preload />
+      <audio id="keyboard-audio" src="/audio/keyboard.mp3" preload />
+      <audio id="shoot-audio" src="/audio/shoot.mp3" preload />
     </div>
-    
-    <!--
-      <div class="qrcode-container" v-show="isQrCodeShow">
-        <canvas id="qrcode"></canvas>
-        <p>扫码下载，立即分享</p>
-      </div>
-      <div class="loader" v-if="hasTookPhoto && !isCountShow && !isQrCodeShow">
-        <div class="loader-inner">
-          <div class="loader-line-wrap">
-            <div class="loader-line"></div>
-          </div>
-          <div class="loader-line-wrap">
-            <div class="loader-line"></div>
-          </div>
-          <div class="loader-line-wrap">
-            <div class="loader-line"></div>
-          </div>
-          <div class="loader-line-wrap">
-            <div class="loader-line"></div>
-          </div>
-          <div class="loader-line-wrap">
-            <div class="loader-line"></div>
-          </div>
-        </div>
-      </div>
-    </div> -->
   </div>
 </template>
 
 <script>
-import SimpleKeyboard from './components/SimpleKeyboard.vue'
+import SimpleKeyboard from "./components/SimpleKeyboard.vue";
 import QRCode from "qrcode";
 import { SVG } from "@svgdotjs/svg.js";
 // eslint-disable-next-line no-unused-vars
 import { WebGLImageFilter } from "./lib/webgl-image-filter";
 // import tracking from "./lib/tracking.js";
-import tracking, { ObjectTracker } from './lib/tracking';
+import tracking, { ObjectTracker } from "./lib/tracking";
 import "./lib/face-min.js";
 
 export default {
   name: "App",
   components: {
-    SimpleKeyboard
+    SimpleKeyboard,
   },
   data() {
     return {
@@ -110,41 +117,47 @@ export default {
     };
   },
   methods: {
-    next(){
+    next() {
+      document.getElementById("button-audio").play();
       this.pageIndex += 1;
-      if(this.pageIndex >= 6){
+      if (this.pageIndex >= 6) {
         // document.getElementById("draw").remove();
         // document.getElementById("videoel").style.display="block";
-        location.reload();
+        // location.reload();
         this.pageIndex -= 6;
       }
-      switch(this.pageIndex){
-        case 2:{
-          this.takePhoto()
-          break
+      switch (this.pageIndex) {
+        case 1: {
+          document.getElementById("videoel").play();
+          break;
         }
-        case 3:{
+        case 2: {
+          this.takePhoto();
+          break;
+        }
+        case 3: {
           // 显示键盘，输入文字
         }
-        case 4:{
+        case 4: {
           this.drawSvg();
-          break
+          break;
         }
-        case 5:{
-          let paint = document.getElementById("paint")
-          paint.style="transform: scale(0.8); transform-origin: 50% 80%;"
+        case 5: {
+          let paint = document.getElementById("paint");
+          paint.style = "transform: scale(0.8); transform-origin: 50% 80%;";
           // 绘制二维码并显示
           this.makeCode();
-          break
+          break;
         }
       }
       // document.getElementsByClassName("machine")[0].style="transform: scale(1.22)"
     },
-    back(){
+    back() {
+      document.getElementById("button-audio").play();
       this.pageIndex -= 1;
-      if(this.pageIndex == 2){
-        this.pageIndex -=1;
-        document.getElementById("videoel").play()
+      if (this.pageIndex == 2) {
+        this.pageIndex -= 1;
+        document.getElementById("videoel").play();
       }
     },
     setText() {
@@ -170,11 +183,13 @@ export default {
       this.count = 3;
       // 更新倒计时
       let intervalId = setInterval(() => {
+        document.getElementById("count-audio").play();
         this.count -= 1;
         if (this.count <= 0) {
           // 闪光灯动效
           let overlay = document.getElementById("overlay");
           overlay.style.display = "block";
+          document.getElementById("shoot-audio").play();
           setTimeout(() => {
             overlay.style.display = "none";
           }, 500);
@@ -191,25 +206,28 @@ export default {
           // console.log(base64)
           // 调用api，并绘制svg
           this.getSvg(base64);
-          this.next()
+          this.next();
         }
       }, 1000);
     },
     drawSvg() {
       // 如果数据还没获取到，每0.5s尝试一次
-      if(this.xmlDoc == null){
-        setTimeout(()=>{
-          this.drawSvg()
-        },500)
-        return
+      if (this.xmlDoc == null) {
+        setTimeout(() => {
+          this.drawSvg();
+        }, 500);
+        return;
       }
       let collection = this.xmlDoc.getElementsByTagName("rect");
-      let draw = SVG().addTo("#paint").size("100%", "100%");
-      draw.attr("id","draw")
-      document.getElementById("videoel").style.display="none";
+      let draw = SVG()
+        .addTo("#paint")
+        .size("100%", "100%");
+      draw.attr("id", "draw");
+      document.getElementById("videoel").style.display = "none";
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
-          document.getElementsByClassName("show")[0].style.opacity=i/collection.length;
+          document.getElementsByClassName("show")[0].style.opacity =
+            i / collection.length;
           this.addRect(draw, collection, i);
         }, 50 * i);
       }
@@ -318,7 +336,7 @@ export default {
             this.videoObj.play();
           };
         })
-        .catch(function (err) {
+        .catch(function(err) {
           console.log(err.name + ": " + err.message);
         }); // 总是在最后检查错误
     },
@@ -349,7 +367,7 @@ export default {
       // 创建画布
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
-      
+
       // 设置宽高度为等同于要压缩图片的尺寸
       canvas.width = targetWidth;
       canvas.height = targetHeight;
@@ -378,7 +396,7 @@ export default {
       let qrcode = document.getElementById("qrcode");
       // console.log(qrcode)
       let url = "http://xiaohui.ai";
-      QRCode.toCanvas(qrcode, url, function (error) {
+      QRCode.toCanvas(qrcode, url, function(error) {
         if (error) console.error(error);
         // console.log('success!');
       });
@@ -419,7 +437,7 @@ export default {
       var file = document.querySelector("input[type=file]").files[0];
       var reader = new FileReader();
 
-      reader.onloadend = function () {
+      reader.onloadend = function() {
         preview.src = reader.result;
         // console.log(preview.src);
       };
@@ -471,14 +489,19 @@ export default {
       // 创建画布
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
-      
 
       // 设置宽高度为等同于要压缩图片的尺寸
       canvas.width = targetWidth;
       canvas.height = targetHeight;
       context.clearRect(0, 0, targetWidth, targetHeight);
       //将img绘制到画布
-      context.drawImage(document.getElementById('canvas'), 0, 0, targetWidth, targetHeight);
+      context.drawImage(
+        document.getElementById("canvas"),
+        0,
+        0,
+        targetWidth,
+        targetHeight
+      );
 
       var tracker = new window.tracking.ObjectTracker("face");
       // const tracker = new window.tracking.ObjectTracker("face");
@@ -486,9 +509,9 @@ export default {
       // console.log(img)
       tracking.track(canvas, tracker);
 
-      tracker.on('track', function(event) {
+      tracker.on("track", function(event) {
         event.data.forEach(function(rect) {
-          console.log(rect)
+          console.log(rect);
           // window.plot(rect.x, rect.y, rect.width, rect.height);
         });
       });
@@ -505,9 +528,9 @@ export default {
       tracker.setEdgesDensity(0.1);
       // 启动摄像头初始化
       this.trackerTask = window.tracking.track("#canvas", tracker);
-      tracker.on("track", function (event) {
+      tracker.on("track", function(event) {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        event.data.forEach(function (rect) {
+        event.data.forEach(function(rect) {
           context.strokeStyle = "#ff0000";
           context.strokeRect(rect.x, rect.y, rect.width, rect.height);
         });
@@ -515,7 +538,8 @@ export default {
     },
     onChange(input) {
       this.input = input.toUpperCase();
-      this.setText()
+      document.getElementById("keyboard-audio").play();
+      this.setText();
     },
     onKeyPress(button) {
       console.log("button", button);
@@ -523,14 +547,16 @@ export default {
     onInputChange(input) {
       // this.input = input.target.value.toUpperCase();
       this.input = input.target.value;
-      this.setText()
-    }
+      this.setText();
+    },
   },
-  mounted: function () {
+  mounted: function() {
     // let ratio = this.getRatio()
     // console.log(ratio)
     this.videoObj = document.getElementById("videoel");
-    this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
+    this.textSvgObj = SVG()
+      .addTo("#inputTextSvg")
+      .size("100%", "100%");
     this.setVideoSrc();
   },
 };
@@ -549,34 +575,18 @@ export default {
   font-size: 100px;
   font-weight: bold;
   font-family: fantasy;
-  background: transparent url(/picture/background@x3.png) center center no-repeat;
+  background: transparent url(/picture/background@x3.png) center center
+    no-repeat;
   /* margin-top: 60px; */
   /* height: 100%;
   width: 100%;
   position: absolute; */
 }
-.input-page {
-  /* font-size: 100px; */
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-.input-page div {
-  width: 100%;
-  height: 200px;
-  position: relative;
-}
-.shoot #inputTextSvg {
+
+#inputTextSvg {
   position: fixed;
-  bottom: 10%;
-  left: 11%;
-}
-.input-page button {
-  /* display: block; */
-  width: 15%;
-  font-size: 60px;
-  height: 100px;
-  position: relative;
+  bottom: 20%;
+  left: 13%;
 }
 #videoel {
   transform: scale(1.065);
@@ -734,54 +744,42 @@ export default {
     transform: rotate(360deg);
   }
 }
-body{
+body {
   width: 100%;
   height: 100%;
   margin: 0;
 }
-.welcome{
+.container {
   width: 100%;
   height: 100%;
 }
-.welcome .title{
-  position: fixed;
-  top: 0;
-  display: block;
-  width: 100%;
-  /* width: 1080px; */
-  /* height: 324px; */
-}
-.welcome .machine{
+.machine0 {
   position: fixed;
   top: 0;
   display: block;
   width: 100%;
 }
-.welcome .decor{
+.decor {
   position: fixed;
   top: 0;
   display: block;
   width: 100%;
 }
-.welcome .btn{
+.btn0 {
   width: 68.8%;
   /* height: 134px; */
   position: fixed;
   bottom: 18%;
   left: 15.6%;
 }
-.welcome .bottom-info{
+.bottom-info0 {
   width: 29.54%;
   /* height: 134px; */
   position: fixed;
   bottom: 5%;
   left: 35%;
 }
-.shoot{
-  width: 100%;
-  height: 100%;
-}
-.shoot .title{
+.title {
   position: fixed;
   top: 0;
   display: block;
@@ -789,7 +787,16 @@ body{
   /* width: 1080px; */
   /* height: 324px; */
 }
-.shoot .machine{
+.machine1 {
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+  transition: all 0.3s ease-out;
+  transform: scale(1.22);
+  transform-origin: 50% 58%;
+}
+.machine2 {
   position: fixed;
   top: 0;
   display: block;
@@ -798,14 +805,33 @@ body{
   transform: scale(1.22);
   transform-origin: 50% 58%;
 }
-.shoot .count {
+.machine3 {
   position: fixed;
-  height: 20.26%;
+  top: 0;
+  display: block;
+  width: 100%;
+  transition: all 5s ease-out;
+  transform: scale(1.22);
+  transform-origin: 50% 58%;
+}
+.machine4 {
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
+  transition: all 5s ease-out;
+  transform: scale(1.22);
+  transform-origin: 50% 58%;
+}
+.count {
+  position: fixed;
+  /* height: 20.26%; */
+  width: 36.02%;
   top: 28%;
-  left: 40.555%;
+  left: 31.99%;
 }
 
-.shoot .input-container{
+.input-container {
   position: fixed;
   width: 79.815%;
   left: 10.09%;
@@ -826,53 +852,83 @@ input {
   max-width: 100%;
 }
 
-.shoot .btn{
+.btn1 {
   width: 64.86%;
   /* height: 134px; */
   position: fixed;
   bottom: 12.8%;
   left: 27.2%;
 }
-.shoot .back-btn{
+.btn2 {
+  width: 64.86%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 12.8%;
+  left: 27.2%;
+}
+.btn3 {
+  width: 64.86%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 12.8%;
+  left: 27.2%;
+}
+.btn4 {
+  width: 64.86%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 12.8%;
+  left: 27.2%;
+}
+.back-btn {
   width: 19.54%;
   /* height: 134px; */
   position: fixed;
   bottom: 12.8%;
   left: 7.5%;
 }
-.shoot .bottom-info{
+.bottom-info1 {
   width: 29.54%;
   /* height: 134px; */
   position: fixed;
   bottom: 1.6%;
   left: 35%;
 }
-.thanks{
-  width: 100%;
-  height: 100%;
-}
-.thanks .title{
+.bottom-info2 {
+  width: 29.54%;
+  /* height: 134px; */
   position: fixed;
-  top: 0;
-  display: block;
-  width: 100%;
-  /* width: 1080px; */
-  /* height: 324px; */
+  bottom: 1.6%;
+  left: 35%;
 }
-.thanks .machine{
+.bottom-info3 {
+  width: 29.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 1.6%;
+  left: 35%;
+}
+.bottom-info4 {
+  width: 29.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 1.6%;
+  left: 35%;
+}
+.machine5 {
   position: fixed;
   top: -5%;
   display: block;
   width: 100%;
 }
-.thanks .btn{
+.btn5 {
   width: 68.8%;
   /* height: 134px; */
   position: fixed;
   bottom: 23%;
   left: 15.6%;
 }
-.thanks .bottom-info{
+.bottom-info5 {
   width: 19.23%;
   /* height: 134px; */
   position: fixed;
