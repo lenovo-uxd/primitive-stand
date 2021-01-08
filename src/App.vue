@@ -17,7 +17,7 @@
     />
     <div
       id="paint"
-      v-if="pageIndex >= 4"
+      v-show="pageIndex >= 4"
       :style="
         pageIndex == 5
           ? 'transform: scale(0.8); transform-origin: 50% 35%;'
@@ -127,18 +127,27 @@ export default {
         this.pageIndex -= 6;
       }
       switch (this.pageIndex) {
+        case 0: {
+          document.getElementById("paint").innerHTML="";
+          this.input="";
+          break;
+        }
         case 1: {
           document.getElementById("videoel").play();
           break;
         }
         case 2: {
-          this.takePhoto();
+          // setTimeout(()=>{
+            this.takePhoto();
+          // },1000) 
           break;
         }
         case 3: {
           // 显示键盘，输入文字
+          break;
         }
         case 4: {
+          console.log("4")
           this.drawSvg();
           break;
         }
@@ -181,6 +190,7 @@ export default {
       // this.drawPhoto()
       // 显示倒计时
       this.count = 3;
+      document.getElementById("count-audio").play();
       // 更新倒计时
       let intervalId = setInterval(() => {
         document.getElementById("count-audio").play();
@@ -678,9 +688,11 @@ body {
   top: 0;
   display: block;
   width: 100%;
-  transition: all 0.3s ease-out;
-  transform: scale(1.22);
-  transform-origin: 50% 58%;
+  /* transform-origin: 50% 58%; */
+  transition: all 0.3s;
+  
+  transform: scale(1.22) translateY(-2%);
+  /* transform-origin: 50% 58%; */
 }
 .machine2 {
   position: fixed;
