@@ -6,9 +6,11 @@
     </div>
     <video
       id="videoel"
+      :class="
+        pageIndex == 0 || pageIndex == 5 ? 'video' + pageIndex : 'video1234'
+      "
       preload="auto"
       autoPlay
-      v-show="pageIndex >= 1 && pageIndex <= 4"
     ></video>
     <img
       class="title"
@@ -25,7 +27,9 @@
       "
     ></div>
     <img
-      :class="'machine' + pageIndex"
+      :class="
+        pageIndex == 0 || pageIndex == 5 ? 'machine' + pageIndex : 'machine1234'
+      "
       src="/picture/machine@x3.png"
       alt="machine"
     />
@@ -49,13 +53,13 @@
       />
     </div>
 
-    <img
+    <!-- <img
       class="back-btn"
       v-show="pageIndex >= 1 && pageIndex <= 4"
       @click="back"
       src="/picture/back-normal@x3.png"
       alt="button"
-    />
+    /> -->
     <img
       class="decor"
       v-if="pageIndex == 0"
@@ -63,17 +67,38 @@
       alt="decoration"
     />
     <img
-      :class="'bottom-info' + pageIndex"
+      :class="
+        pageIndex == 0 || pageIndex == 5
+          ? 'bottom-info' + pageIndex
+          : 'bottom-info1234'
+      "
       :src="'/picture/infobottom' + pageIndex + '@x3.png'"
       alt="info bottom"
     />
     <canvas v-show="pageIndex == 5" id="qrcode"></canvas>
     <img
-      :class="'btn' + pageIndex"
+      :class="pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'"
+      @click="next"
+      src="/picture/btn0@x3.png"
+      alt="button"
+    />
+    <img
+      :class="
+        pageIndex == 0 || pageIndex == 5
+          ? 'back-btn' + pageIndex
+          : 'back-btn1234'
+      "
+      @click="back"
+      src="/picture/back-normal@x3.png"
+      alt="button"
+    />
+    <img
+      :class="pageIndex == 0 || pageIndex == 5 ? 'btn' + pageIndex : 'btn1234'"
       @click="next"
       :src="'/picture/btn' + pageIndex + '@x3.png'"
       alt="button"
     />
+
     <div v-show="false">
       <audio id="button-audio" src="/audio/button.mp3" preload />
       <audio id="count-audio" src="/audio/count.mp3" preload />
@@ -117,7 +142,7 @@ export default {
     };
   },
   methods: {
-    next() {
+    next(e) {
       document.getElementById("button-audio").play();
       this.pageIndex += 1;
       if (this.pageIndex >= 6) {
@@ -128,18 +153,26 @@ export default {
       }
       switch (this.pageIndex) {
         case 0: {
-          document.getElementById("paint").innerHTML="";
-          this.input="";
+          document.getElementById("paint").innerHTML = "";
+          document.getElementById("videoel").style.opacity = 0;
+          // console.log(document.getElementsByClassName("show")[0])
+          document.getElementsByClassName("show")[0].style.opacity = 0;
+          this.input = "";
           break;
         }
         case 1: {
           document.getElementById("videoel").play();
+          document.getElementById("videoel").style.opacity=1;
           break;
         }
         case 2: {
-          // setTimeout(()=>{
-            this.takePhoto();
-          // },1000) 
+          let btn = e.target;
+          btn.src = "/picture/btn1-pressed@x3.png";
+          
+          setTimeout(()=>{
+            btn.src = "/picture/btn2@x3.png"
+          },2000)
+          this.takePhoto();
           break;
         }
         case 3: {
@@ -147,7 +180,12 @@ export default {
           break;
         }
         case 4: {
-          console.log("4")
+          let btn = e.target;
+          btn.src = "/picture/btn3-pressed@x3.png";
+          
+          setTimeout(()=>{
+            btn.src = "/picture/btn4@x3.png"
+          },2000)
           this.drawSvg();
           break;
         }
@@ -164,9 +202,34 @@ export default {
     back() {
       document.getElementById("button-audio").play();
       this.pageIndex -= 1;
-      if (this.pageIndex == 2) {
-        this.pageIndex -= 1;
-        document.getElementById("videoel").play();
+      switch (this.pageIndex) {
+        case 0: {
+          document.getElementById("paint").innerHTML = "";
+          document.getElementById("videoel").style.opacity = 0;
+          document.getElementsByClassName("show")[0].style.opacity = 0;
+          this.input = "";
+          break;
+        }
+        case 1: {
+          document.getElementById("videoel").play();
+          document.getElementById("videoel").style.opacity=1;
+          break;
+        }
+        case 2: {
+          this.pageIndex -= 1;
+          document.getElementById("videoel").play();
+          break;
+        }
+        case 3: {
+          // 显示键盘，输入文字
+          break;
+        }
+        case 4: {
+          break;
+        }
+        case 5: {
+          break;
+        }
       }
     },
     setText() {
@@ -233,7 +296,11 @@ export default {
         .addTo("#paint")
         .size("100%", "100%");
       draw.attr("id", "draw");
-      document.getElementById("videoel").style.display = "none";
+      document.getElementById("videoel").style.opacity = 0;
+      if(this.textObj == null){
+        this.input = "LENOVO" 
+        this.setText()
+      }
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
           document.getElementsByClassName("show")[0].style.opacity =
@@ -299,8 +366,8 @@ export default {
 
       group.attr("fill", fill);
       group.attr("fill-opacity", 0.4 + i / length / 5);
-
-      let text = this.textObj == null ? "LENOVO" : this.textObj.text();
+      
+      let text = this.textObj.text();
       group.plain(text);
 
       if (width > height) {
@@ -585,6 +652,7 @@ export default {
   font-size: 100px;
   font-weight: bold;
   font-family: fantasy;
+  transition: all 3s;
   background: transparent url(/picture/background@x3.png) center center
     no-repeat;
   /* margin-top: 60px; */
@@ -598,9 +666,35 @@ export default {
   bottom: 20%;
   left: 13%;
 }
-#videoel {
+/* #videoel {
   transform: scale(1.065);
   transform-origin: 50% -250%;
+} */
+.video0 {
+  transition: all 3s;
+  transform: scale(0.9);
+  top: 15%;
+  left: 13%;
+  /* transform-origin: 50% -250%; */
+  opacity: 0;
+  position: fixed;
+}
+.video1234 {
+  transition: all 3s;
+  transform: scale(1.065);
+  position: fixed;
+  top: 11%;
+  left: 12%;
+  opacity: 1;
+}
+.video5 {
+  transition: all 3s;
+  transform: scale(0.9);
+  top: 15%;
+  left: 13%;
+  /* transform-origin: 50% -250%; */
+  opacity: 0;
+  position: fixed;
 }
 .show {
   position: fixed;
@@ -633,6 +727,7 @@ export default {
   height: 200px !important;
 }
 #paint {
+  transition: all 3s;
   position: fixed;
   width: 79.815%;
   height: 59.896%;
@@ -650,6 +745,7 @@ body {
   height: 100%;
 }
 .machine0 {
+  transition: all 3s;
   position: fixed;
   top: 0;
   display: block;
@@ -661,14 +757,9 @@ body {
   display: block;
   width: 100%;
 }
-.btn0 {
-  width: 68.8%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 18%;
-  left: 15.6%;
-}
+
 .bottom-info0 {
+  transition: all 3s;
   width: 29.54%;
   /* height: 134px; */
   position: fixed;
@@ -683,44 +774,18 @@ body {
   /* width: 1080px; */
   /* height: 324px; */
 }
-.machine1 {
+.machine1234 {
   position: fixed;
   top: 0;
   display: block;
   width: 100%;
   /* transform-origin: 50% 58%; */
-  transition: all 0.3s;
-  
+  transition: all 3s;
+
   transform: scale(1.22) translateY(-2%);
   /* transform-origin: 50% 58%; */
 }
-.machine2 {
-  position: fixed;
-  top: 0;
-  display: block;
-  width: 100%;
-  transition: all 5s ease-out;
-  transform: scale(1.22);
-  transform-origin: 50% 58%;
-}
-.machine3 {
-  position: fixed;
-  top: 0;
-  display: block;
-  width: 100%;
-  transition: all 5s ease-out;
-  transform: scale(1.22);
-  transform-origin: 50% 58%;
-}
-.machine4 {
-  position: fixed;
-  top: 0;
-  display: block;
-  width: 100%;
-  transition: all 5s ease-out;
-  transform: scale(1.22);
-  transform-origin: 50% 58%;
-}
+
 .count {
   position: fixed;
   /* height: 20.26%; */
@@ -749,84 +814,100 @@ input {
   font-size: 32px;
   max-width: 100%;
 }
+.btn00 {
+  transition: all 3s;
+  width: 68.8%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 18%;
+  left: 15.6%;
+  opacity: 1;
+}
+.btn01234 {
+  transition: all 3s;
+  width: 83.936%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 12.8%;
+  left: 7.5%;
+  opacity: 0;
+}
+.btn05 {
+  transition: all 3s;
+  position: fixed;
+  width: 68.8%;
+  bottom: 23%;
+  left: 15.6%;
+  opacity: 0;
+}
+.btn0 {
+  transition: all 3s;
+  width: 68.8%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 18%;
+  left: 15.6%;
+  opacity: 0;
+}
+.btn1234 {
+  transition: all 3s;
+  width: 64.86%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 12.8%;
+  left: 27.6%;
+  opacity: 1;
+}
 
-.btn1 {
-  width: 64.86%;
+.back-btn0 {
+  transition: all 3s;
+  width: 16.26%;
   /* height: 134px; */
   position: fixed;
-  bottom: 12.8%;
-  left: 27.2%;
+  bottom: 18%;
+  left: 15.6%;
+  opacity: 0;
 }
-.btn2 {
-  width: 64.86%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 12.8%;
-  left: 27.2%;
-}
-.btn3 {
-  width: 64.86%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 12.8%;
-  left: 27.2%;
-}
-.btn4 {
-  width: 64.86%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 12.8%;
-  left: 27.2%;
-}
-.back-btn {
+.back-btn1234 {
+  transition: all 3s;
   width: 19.54%;
   /* height: 134px; */
   position: fixed;
   bottom: 12.8%;
   left: 7.5%;
+  opacity: 1;
 }
-.bottom-info1 {
+.back-btn5 {
+  transition: all 3s;
+  display: none;
+}
+.bottom-info1234 {
+  transition: all 3s;
   width: 29.54%;
   /* height: 134px; */
   position: fixed;
   bottom: 1.6%;
   left: 35%;
 }
-.bottom-info2 {
-  width: 29.54%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 1.6%;
-  left: 35%;
-}
-.bottom-info3 {
-  width: 29.54%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 1.6%;
-  left: 35%;
-}
-.bottom-info4 {
-  width: 29.54%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 1.6%;
-  left: 35%;
-}
+
 .machine5 {
+  transition: all 3s;
   position: fixed;
   top: -5%;
   display: block;
   width: 100%;
 }
 .btn5 {
+  transition: all 3s;
   width: 68.8%;
   /* height: 134px; */
   position: fixed;
   bottom: 23%;
   left: 15.6%;
+  opacity: 1;
 }
 .bottom-info5 {
+  transition: all 3s;
   width: 19.23%;
   /* height: 134px; */
   position: fixed;
