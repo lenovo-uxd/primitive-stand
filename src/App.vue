@@ -77,7 +77,9 @@
     />
     <canvas v-show="pageIndex == 5" id="qrcode"></canvas>
     <img
-      :class="pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'"
+      :class="
+        pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'
+      "
       @click="next"
       src="/picture/btn0@x3.png"
       alt="button"
@@ -115,7 +117,7 @@ import { SVG } from "@svgdotjs/svg.js";
 // eslint-disable-next-line no-unused-vars
 import { WebGLImageFilter } from "./lib/webgl-image-filter";
 // import tracking from "./lib/tracking.js";
-import tracking, { ObjectTracker } from "./lib/tracking";
+import tracking from "./lib/tracking-min.js";
 import "./lib/face-min.js";
 
 export default {
@@ -143,6 +145,16 @@ export default {
   },
   methods: {
     next(e) {
+      // if (this.pageIndex == 0) {
+      //   let btn = e.target;
+      //   setTimeout(() => {
+      //     btn.src = "/picture/btn0-pressed@x3.png";
+      //   }, 50);
+
+      //   setTimeout(() => {
+      //     btn.src = "/picture/btn0@x3.png";
+      //   }, 200);
+      // }
       document.getElementById("button-audio").play();
       this.pageIndex += 1;
       if (this.pageIndex >= 6) {
@@ -162,16 +174,18 @@ export default {
         }
         case 1: {
           document.getElementById("videoel").play();
-          document.getElementById("videoel").style.opacity=1;
+          document.getElementById("videoel").style.opacity = 1;
           break;
         }
         case 2: {
           let btn = e.target;
-          btn.src = "/picture/btn1-pressed@x3.png";
-          
-          setTimeout(()=>{
-            btn.src = "/picture/btn2@x3.png"
-          },2000)
+          setTimeout(() => {
+            btn.src = "/picture/btn1-pressed@x3.png";
+          }, 50);
+
+          setTimeout(() => {
+            btn.src = "/picture/btn2@x3.png";
+          }, 200);
           this.takePhoto();
           break;
         }
@@ -181,11 +195,12 @@ export default {
         }
         case 4: {
           let btn = e.target;
-          btn.src = "/picture/btn3-pressed@x3.png";
-          
-          setTimeout(()=>{
-            btn.src = "/picture/btn4@x3.png"
-          },2000)
+          setTimeout(() => {
+            btn.src = "/picture/btn3-pressed@x3.png";
+          }, 50);
+          setTimeout(() => {
+            btn.src = "/picture/btn4@x3.png";
+          }, 200);
           this.drawSvg();
           break;
         }
@@ -199,7 +214,14 @@ export default {
       }
       // document.getElementsByClassName("machine")[0].style="transform: scale(1.22)"
     },
-    back() {
+    back(e) {
+      let btn = e.target;
+      setTimeout(() => {
+        btn.src = "/picture/back-pressed@x3.png";
+      }, 50);
+      setTimeout(() => {
+        btn.src = "/picture/back-normal@x3.png";
+      }, 200);
       document.getElementById("button-audio").play();
       this.pageIndex -= 1;
       switch (this.pageIndex) {
@@ -212,7 +234,7 @@ export default {
         }
         case 1: {
           document.getElementById("videoel").play();
-          document.getElementById("videoel").style.opacity=1;
+          document.getElementById("videoel").style.opacity = 1;
           break;
         }
         case 2: {
@@ -297,9 +319,9 @@ export default {
         .size("100%", "100%");
       draw.attr("id", "draw");
       document.getElementById("videoel").style.opacity = 0;
-      if(this.textObj == null){
-        this.input = "LENOVO" 
-        this.setText()
+      if (this.textObj == null) {
+        this.input = "LENOVO";
+        this.setText();
       }
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
@@ -366,7 +388,7 @@ export default {
 
       group.attr("fill", fill);
       group.attr("fill-opacity", 0.4 + i / length / 5);
-      
+
       let text = this.textObj.text();
       group.plain(text);
 
@@ -564,9 +586,10 @@ export default {
         }
       }
       // 创建画布
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-
+      let canvas = document.createElement("canvas");
+      let context = canvas.getContext("2d");
+      // canvas.setAttribute("id","face-location")
+      // document.getElementById("app").appendChild(canvas)
       // 设置宽高度为等同于要压缩图片的尺寸
       canvas.width = targetWidth;
       canvas.height = targetHeight;
@@ -582,11 +605,12 @@ export default {
 
       var tracker = new window.tracking.ObjectTracker("face");
       // const tracker = new window.tracking.ObjectTracker("face");
-      tracker.setStepSize(1.7);
+      // tracker.setStepSize(1.7);
       // console.log(img)
-      tracking.track(canvas, tracker);
-
+      window.tracking.track(canvas, tracker);
+      console.log(window.tracking)
       tracker.on("track", function(event) {
+        console.log(event)
         event.data.forEach(function(rect) {
           console.log(rect);
           // window.plot(rect.x, rect.y, rect.width, rect.height);
@@ -652,8 +676,8 @@ export default {
   font-size: 100px;
   font-weight: bold;
   font-family: fantasy;
-  transition: all 3s;
-  background: transparent url(/picture/background@x3.png) center center
+  transition: all 1s;
+  background: transparent url(/picture/background.png) center center
     no-repeat;
   /* margin-top: 60px; */
   /* height: 100%;
@@ -671,7 +695,7 @@ export default {
   transform-origin: 50% -250%;
 } */
 .video0 {
-  transition: all 3s;
+  transition: all 1s;
   transform: scale(0.9);
   top: 15%;
   left: 13%;
@@ -680,7 +704,7 @@ export default {
   position: fixed;
 }
 .video1234 {
-  transition: all 3s;
+  transition: all 1s;
   transform: scale(1.065);
   position: fixed;
   top: 11%;
@@ -688,9 +712,9 @@ export default {
   opacity: 1;
 }
 .video5 {
-  transition: all 3s;
+  transition: all 1s;
   transform: scale(0.9);
-  top: 15%;
+  top: 10%;
   left: 13%;
   /* transform-origin: 50% -250%; */
   opacity: 0;
@@ -727,7 +751,7 @@ export default {
   height: 200px !important;
 }
 #paint {
-  transition: all 3s;
+  transition: all 1s;
   position: fixed;
   width: 79.815%;
   height: 59.896%;
@@ -745,7 +769,7 @@ body {
   height: 100%;
 }
 .machine0 {
-  transition: all 3s;
+  transition: all 1s;
   position: fixed;
   top: 0;
   display: block;
@@ -759,7 +783,7 @@ body {
 }
 
 .bottom-info0 {
-  transition: all 3s;
+  transition: all 1s;
   width: 29.54%;
   /* height: 134px; */
   position: fixed;
@@ -780,7 +804,7 @@ body {
   display: block;
   width: 100%;
   /* transform-origin: 50% 58%; */
-  transition: all 3s;
+  transition: all 1s;
 
   transform: scale(1.22) translateY(-2%);
   /* transform-origin: 50% 58%; */
@@ -808,14 +832,22 @@ input {
   font-size: 80px;
   border: none;
   box-sizing: border-box;
+  background: black;
+  color: white;
+  opacity: 0.7;
 }
 
 .simple-keyboard {
   font-size: 32px;
   max-width: 100%;
+  background: black;
+}
+.hg-theme-default .hg-button{
+  background: black;
+  color: cadetblue;
 }
 .btn00 {
-  transition: all 3s;
+  transition: all 1s;
   width: 68.8%;
   /* height: 134px; */
   position: fixed;
@@ -824,7 +856,7 @@ input {
   opacity: 1;
 }
 .btn01234 {
-  transition: all 3s;
+  transition: all 1s;
   width: 83.936%;
   /* height: 134px; */
   position: fixed;
@@ -833,7 +865,7 @@ input {
   opacity: 0;
 }
 .btn05 {
-  transition: all 3s;
+  transition: all 1s;
   position: fixed;
   width: 68.8%;
   bottom: 23%;
@@ -841,7 +873,7 @@ input {
   opacity: 0;
 }
 .btn0 {
-  transition: all 3s;
+  transition: all 1s;
   width: 68.8%;
   /* height: 134px; */
   position: fixed;
@@ -850,7 +882,7 @@ input {
   opacity: 0;
 }
 .btn1234 {
-  transition: all 3s;
+  transition: all 1s;
   width: 64.86%;
   /* height: 134px; */
   position: fixed;
@@ -860,7 +892,7 @@ input {
 }
 
 .back-btn0 {
-  transition: all 3s;
+  transition: all 1s;
   width: 16.26%;
   /* height: 134px; */
   position: fixed;
@@ -869,7 +901,7 @@ input {
   opacity: 0;
 }
 .back-btn1234 {
-  transition: all 3s;
+  transition: all 1s;
   width: 19.54%;
   /* height: 134px; */
   position: fixed;
@@ -878,11 +910,11 @@ input {
   opacity: 1;
 }
 .back-btn5 {
-  transition: all 3s;
+  transition: all 1s;
   display: none;
 }
 .bottom-info1234 {
-  transition: all 3s;
+  transition: all 1s;
   width: 29.54%;
   /* height: 134px; */
   position: fixed;
@@ -891,14 +923,14 @@ input {
 }
 
 .machine5 {
-  transition: all 3s;
+  transition: all 1s;
   position: fixed;
   top: -5%;
   display: block;
   width: 100%;
 }
 .btn5 {
-  transition: all 3s;
+  transition: all 1s;
   width: 68.8%;
   /* height: 134px; */
   position: fixed;
@@ -907,7 +939,7 @@ input {
   opacity: 1;
 }
 .bottom-info5 {
-  transition: all 3s;
+  transition: all 1s;
   width: 19.23%;
   /* height: 134px; */
   position: fixed;

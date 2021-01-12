@@ -137,7 +137,7 @@
     if (!tracker) {
       throw new Error('Tracker not specified, try `tracking.track(element, new tracking.FaceTracker())`.');
     }
-
+    console.log(element.nodeName.toLowerCase())
     switch (element.nodeName.toLowerCase()) {
       case 'canvas':
         return this.trackCanvas_(element, tracker, opt_options);
@@ -189,8 +189,8 @@
     var width = element.width;
     var height = element.height;
     var context = element.getContext('2d');
-    // console.log(element)
-    // console.log(context)
+    console.log(element)
+    console.log(context)
     var imageData = context.getImageData(0, 0, width, height);
     tracker.track(imageData.data, width, height);
   };
