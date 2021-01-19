@@ -1,0 +1,15 @@
+Windows Registry Editor Version 5.00  
+ 
+[HKEY_CLASSES_ROOT\tabkey]
+@="URL:tabkey Protocol"
+"URL Protocol"=""
+  
+[HKEY_CLASSES_ROOT\tabkey\DefaultIcon]
+@="osk.exe,1"
+  
+[HKEY_CLASSES_ROOT\tabkey\shell]
+ 
+[HKEY_CLASSES_ROOT\tabkey\shell\open]
+ 
+[HKEY_CLASSES_ROOT\tabkey\shell\open\command]
+@="\"osk.exe\" \"%1\""

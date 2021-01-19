@@ -1,9 +1,21 @@
 <template>
   <div id="app">
     <div id="inputTextSvg" width="80%" height="200px"></div>
-    <div v-show="pageIndex >= 1 && pageIndex <= 4" class="show">
+    <div :class="
+        pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
+      ">
       <canvas id="canvas" width="1080px" height="1920px" />
     </div>
+    <video
+      :class="
+        pageIndex == 0 || pageIndex == 5 ? 'screen' + pageIndex : 'screen1234'
+      "
+      preload="auto"
+      src="/video/screen.mp4"
+      autoplay
+      loop
+      muted
+    />
     <video
       id="videoel"
       :class="
@@ -27,11 +39,21 @@
       "
     ></div>
     <img
+      class="decor-bottom"
+      src="/picture/decor-bottom.png"
+      v-show="pageIndex == 0"
+    />
+    <img
       :class="
         pageIndex == 0 || pageIndex == 5 ? 'machine' + pageIndex : 'machine1234'
       "
       src="/picture/machine@x3.png"
       alt="machine"
+    />
+    <img
+      class="decor-top"
+      src="/picture/decor-top.png"
+      v-show="pageIndex == 0"
     />
     <img
       class="count"
@@ -41,10 +63,12 @@
     <div id="overlay"></div>
     <div class="input-container" v-show="pageIndex == 3">
       <input
+        id="input"
         :value="input"
         class="input"
         @input="onInputChange"
         placeholder="输入名字"
+        autocomplete="off"
       />
       <SimpleKeyboard
         @onChange="onChange"
@@ -52,20 +76,6 @@
         :input="input"
       />
     </div>
-
-    <!-- <img
-      class="back-btn"
-      v-show="pageIndex >= 1 && pageIndex <= 4"
-      @click="back"
-      src="/picture/back-normal@x3.png"
-      alt="button"
-    /> -->
-    <img
-      class="decor"
-      v-if="pageIndex == 0"
-      src="/picture/decoration1@x3.png"
-      alt="decoration"
-    />
     <img
       :class="
         pageIndex == 0 || pageIndex == 5
@@ -100,7 +110,7 @@
       :src="'/picture/btn' + pageIndex + '@x3.png'"
       alt="button"
     />
-
+    
     <div v-show="false">
       <audio id="button-audio" src="/audio/button.mp3" preload />
       <audio id="count-audio" src="/audio/count.mp3" preload />
@@ -119,6 +129,9 @@ import { WebGLImageFilter } from "./lib/webgl-image-filter";
 // import tracking from "./lib/tracking.js";
 import tracking from "./lib/tracking-min.js";
 import "./lib/face-min.js";
+import {GIF,URL} from "./lib/gif.js";
+import axios from "axios";
+const CancelToken = axios.CancelToken;
 
 export default {
   name: "App",
@@ -141,20 +154,14 @@ export default {
       videoObj: null,
       maxHeight: 500,
       xmlDoc: null,
+      cancelAjax: null,
     };
   },
   methods: {
     next(e) {
-      // if (this.pageIndex == 0) {
-      //   let btn = e.target;
-      //   setTimeout(() => {
-      //     btn.src = "/picture/btn0-pressed@x3.png";
-      //   }, 50);
-
-      //   setTimeout(() => {
-      //     btn.src = "/picture/btn0@x3.png";
-      //   }, 200);
-      // }
+      if(this.pageIndex == 4){
+        return
+      }
       document.getElementById("button-audio").play();
       this.pageIndex += 1;
       if (this.pageIndex >= 6) {
@@ -167,14 +174,27 @@ export default {
         case 0: {
           document.getElementById("paint").innerHTML = "";
           document.getElementById("videoel").style.opacity = 0;
+          this.$nextTick(function () {
+            // DOM 现在更新了
+            // `this` 绑定到当前实例
+            document.getElementsByClassName("show0")[0].style.opacity = 0;
+            document.getElementsByClassName("btn00")[0].style.opacity = 1;
+            document.getElementsByClassName("btn0")[0].style.display = "none";
+            document.getElementsByClassName("back-btn0")[0].style.display = "none";
+          })
           // console.log(document.getElementsByClassName("show")[0])
-          document.getElementsByClassName("show")[0].style.opacity = 0;
+          
           this.input = "";
           break;
         }
         case 1: {
           document.getElementById("videoel").play();
           document.getElementById("videoel").style.opacity = 1;
+          setTimeout(() => {
+            document.getElementsByClassName("btn1234")[0].style.display = "block";
+            document.getElementsByClassName("back-btn1234")[0].style.display = "block";
+            document.getElementsByClassName("btn01234")[0].style.opacity = 0;
+          }, 900);
           break;
         }
         case 2: {
@@ -191,6 +211,12 @@ export default {
         }
         case 3: {
           // 显示键盘，输入文字
+          
+          location.replace("tabkey:");
+          setTimeout(()=>{
+            document.getElementById("input").focus();
+          }, 5000)
+          
           break;
         }
         case 4: {
@@ -205,10 +231,10 @@ export default {
           break;
         }
         case 5: {
-          let paint = document.getElementById("paint");
-          paint.style = "transform: scale(0.8); transform-origin: 50% 80%;";
-          // 绘制二维码并显示
-          this.makeCode();
+          // let paint = document.getElementById("paint");
+          // paint.style = "transform: scale(0.8); transform-origin: 50% 80%;";
+          // // 绘制二维码并显示
+          // this.makeCode();
           break;
         }
       }
@@ -223,33 +249,54 @@ export default {
         btn.src = "/picture/back-normal@x3.png";
       }, 200);
       document.getElementById("button-audio").play();
+      if(this.pageIndex == 4){
+        return
+      }
       this.pageIndex -= 1;
       switch (this.pageIndex) {
         case 0: {
           document.getElementById("paint").innerHTML = "";
           document.getElementById("videoel").style.opacity = 0;
-          document.getElementsByClassName("show")[0].style.opacity = 0;
+          document.getElementsByClassName("btn1234")[0].style.display = "none";
+          document.getElementsByClassName("back-btn1234")[0].style.display = "none";
+          document.getElementsByClassName("btn01234")[0].style.opacity = 1;
+          this.$nextTick(function () {
+            // DOM 现在更新了
+            // `this` 绑定到当前实例
+            document.getElementsByClassName("show0")[0].style.opacity = 0;
+            document.getElementsByClassName("btn00")[0].style.opacity = 1;
+          })
           this.input = "";
           break;
         }
         case 1: {
+          this.input = "";
           document.getElementById("videoel").play();
           document.getElementById("videoel").style.opacity = 1;
+          if (typeof this.cancelAjax === `function`) {
+            this.cancelAjax();
+            this.cancelAjax = null;
+          }
+          if (this.xmlDoc != null) {
+            this.xmlDoc = null;
+          }
           break;
         }
         case 2: {
           this.pageIndex -= 1;
+          this.input = "";
           document.getElementById("videoel").play();
+          if (typeof this.cancelAjax === `function`) {
+            this.cancelAjax();
+            this.cancelAjax = null;
+          }
+          if (this.xmlDoc != null) {
+            this.xmlDoc = null;
+          }
           break;
         }
         case 3: {
           // 显示键盘，输入文字
-          break;
-        }
-        case 4: {
-          break;
-        }
-        case 5: {
           break;
         }
       }
@@ -319,18 +366,50 @@ export default {
         .size("100%", "100%");
       draw.attr("id", "draw");
       document.getElementById("videoel").style.opacity = 0;
-      if (this.textObj == null) {
+      if (this.textObj == null || this.input == "") {
         this.input = "LENOVO";
         this.setText();
       }
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
-          document.getElementsByClassName("show")[0].style.opacity =
+          document.getElementsByClassName("show1234")[0].style.opacity =
             i / collection.length;
           this.addRect(draw, collection, i);
         }, 50 * i);
       }
+      setTimeout(() => {
+        this.pageIndex += 1;
+        let paint = document.getElementById("paint");
+        paint.style = "transform: scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
+        this.$nextTick(()=>{
+          document.getElementsByClassName("back-btn5")[0].style.display = "none";
+        })
+        
+        this.makeCode();
+      }, 50 * collection.length);
+      this.drawGif()
       this.xmlDoc = null;
+    },
+    drawGif(){
+      var gif = new GIF({
+        workers: 2,
+        quality: 10
+      });
+
+      // add an image element
+      // gif.addFrame(imageElement);
+
+      // or a canvas element
+      gif.addFrame(document.getElementById("paint"), {delay: 200});
+
+      // or copy the pixels from a canvas context
+      // gif.addFrame(ctx, {copy: true});
+
+      gif.on('finished', function(blob) {
+        window.open(URL.createObjectURL(blob));
+      });
+
+      gif.render();
     },
     addRect(draw, collection, i) {
       // console.log(i)
@@ -424,7 +503,8 @@ export default {
     },
     setVideoSrc() {
       // 想要获取一个最接近 1280x720 的相机分辨率
-      var constraints = { audio: false, video: { width: 810, height: 1080 } };
+      // var constraints = { audio: false, video: { width: 810, height: 1080 } };
+      var constraints = { audio: false, video: { width: 360, height: 480 } };
 
       navigator.mediaDevices
         .getUserMedia(constraints)
@@ -548,6 +628,7 @@ export default {
       }
     },
     getSvg(base64) {
+      let _this = this;
       var settings = {
         url: "http://localhost:3000/getsvg",
         method: "POST",
@@ -556,8 +637,11 @@ export default {
           "Content-Type": "application/json",
         },
         data: JSON.stringify({ data: base64 }),
+        cancelToken: new CancelToken(function executor(c) {
+          _this.cancelAjax = c;
+        }),
       };
-      this.$ajax(settings).then((res) => {
+      axios(settings).then((res) => {
         // console.log(res);
         this.xmlDoc = this.xmlParse(res.data.data);
       });
@@ -608,9 +692,9 @@ export default {
       // tracker.setStepSize(1.7);
       // console.log(img)
       window.tracking.track(canvas, tracker);
-      console.log(window.tracking)
+      console.log(window.tracking);
       tracker.on("track", function(event) {
-        console.log(event)
+        console.log(event);
         event.data.forEach(function(rect) {
           console.log(rect);
           // window.plot(rect.x, rect.y, rect.width, rect.height);
@@ -677,8 +761,7 @@ export default {
   font-weight: bold;
   font-family: fantasy;
   transition: all 1s;
-  background: transparent url(/picture/background.png) center center
-    no-repeat;
+  background: transparent url(/picture/background.png) center center no-repeat;
   /* margin-top: 60px; */
   /* height: 100%;
   width: 100%;
@@ -694,6 +777,29 @@ export default {
   transform: scale(1.065);
   transform-origin: 50% -250%;
 } */
+.screen0 {
+  transition: all 1s;
+  width: 63%;
+  position: fixed;
+  left: 18.5%;
+  top: 17%;
+}
+.screen1234 {
+  transition: all 1s;
+  width: 78%;
+  position: fixed;
+  left: 11%;
+  top: 9%;
+  opacity: 0;
+}
+.screen5 {
+  transition: all 1s;
+  width: 63%;
+  position: fixed;
+  left: 18.5%;
+  top: 17%;
+  opacity: 0;
+}
 .video0 {
   transition: all 1s;
   transform: scale(0.9);
@@ -720,13 +826,31 @@ export default {
   opacity: 0;
   position: fixed;
 }
-.show {
+.show0 {
   position: fixed;
   left: 10.09%;
   top: 10%;
   width: 862px;
   height: 1150px;
   opacity: 0;
+}
+.show1234 {
+  position: fixed;
+  left: 10.09%;
+  top: 10%;
+  width: 862px;
+  height: 1150px;
+  opacity: 0;
+}
+.show5 {
+  position: fixed;
+  left: 10.09%;
+  top: 10%;
+  width: 862px;
+  height: 1150px;
+  opacity: 1;
+  transform: scale(0.8);
+  transform-origin: 50% 35%;
 }
 #canvas {
   width: 862px;
@@ -768,28 +892,20 @@ body {
   width: 100%;
   height: 100%;
 }
-.machine0 {
-  transition: all 1s;
+
+.decor-top {
   position: fixed;
   top: 0;
   display: block;
   width: 100%;
 }
-.decor {
+.decor-bottom {
   position: fixed;
-  top: 0;
+  bottom: 0;
   display: block;
   width: 100%;
 }
 
-.bottom-info0 {
-  transition: all 1s;
-  width: 29.54%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 5%;
-  left: 35%;
-}
 .title {
   position: fixed;
   top: 0;
@@ -797,6 +913,13 @@ body {
   width: 100%;
   /* width: 1080px; */
   /* height: 324px; */
+}
+.machine0 {
+  transition: all 1s;
+  position: fixed;
+  top: 0;
+  display: block;
+  width: 100%;
 }
 .machine1234 {
   position: fixed;
@@ -809,7 +932,13 @@ body {
   transform: scale(1.22) translateY(-2%);
   /* transform-origin: 50% 58%; */
 }
-
+.machine5 {
+  transition: all 1s;
+  position: fixed;
+  top: -5%;
+  display: block;
+  width: 100%;
+}
 .count {
   position: fixed;
   /* height: 20.26%; */
@@ -842,27 +971,28 @@ input {
   max-width: 100%;
   background: black;
 }
-.hg-theme-default .hg-button{
+.hg-theme-default .hg-button {
   background: black;
   color: cadetblue;
 }
 .btn00 {
-  transition: all 1s;
+  transition-property: width, left, bottom, position; 
+  transition-duration: 1s, 1s, 1s, 1s;
   width: 68.8%;
   /* height: 134px; */
   position: fixed;
   bottom: 18%;
   left: 15.6%;
-  opacity: 1;
+  /* opacity: 1; */
 }
 .btn01234 {
   transition: all 1s;
-  width: 83.936%;
+  width: 85%;
   /* height: 134px; */
   position: fixed;
   bottom: 12.8%;
   left: 7.5%;
-  opacity: 0;
+  /* opacity: 0; */
 }
 .btn05 {
   transition: all 1s;
@@ -873,61 +1003,22 @@ input {
   opacity: 0;
 }
 .btn0 {
-  transition: all 1s;
-  width: 68.8%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 18%;
-  left: 15.6%;
-  opacity: 0;
-}
-.btn1234 {
-  transition: all 1s;
+  /* transition: all 1s; */
   width: 64.86%;
   /* height: 134px; */
   position: fixed;
   bottom: 12.8%;
   left: 27.6%;
-  opacity: 1;
+  display: none;
 }
-
-.back-btn0 {
-  transition: all 1s;
-  width: 16.26%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 18%;
-  left: 15.6%;
-  opacity: 0;
-}
-.back-btn1234 {
-  transition: all 1s;
-  width: 19.54%;
+.btn1234 {
+  /* transition: all 1s; */
+  width: 64.86%;
   /* height: 134px; */
   position: fixed;
   bottom: 12.8%;
-  left: 7.5%;
-  opacity: 1;
-}
-.back-btn5 {
-  transition: all 1s;
+  left: 27.6%;
   display: none;
-}
-.bottom-info1234 {
-  transition: all 1s;
-  width: 29.54%;
-  /* height: 134px; */
-  position: fixed;
-  bottom: 1.6%;
-  left: 35%;
-}
-
-.machine5 {
-  transition: all 1s;
-  position: fixed;
-  top: -5%;
-  display: block;
-  width: 100%;
 }
 .btn5 {
   transition: all 1s;
@@ -937,6 +1028,42 @@ input {
   bottom: 23%;
   left: 15.6%;
   opacity: 1;
+}
+.back-btn0 {
+  width: 16.26%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 18%;
+  left: 15.6%;
+  display: none;
+}
+.back-btn1234 {
+  width: 19.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 12.8%;
+  left: 7.5%;
+  display: none;
+}
+.back-btn5 {
+  transition: all 1s;
+  display: none;
+}
+.bottom-info0 {
+  transition: all 1s;
+  width: 29.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 5%;
+  left: 35%;
+}
+.bottom-info1234 {
+  transition: all 1s;
+  width: 29.54%;
+  /* height: 134px; */
+  position: fixed;
+  bottom: 1.6%;
+  left: 35%;
 }
 .bottom-info5 {
   transition: all 1s;
