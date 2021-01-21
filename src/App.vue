@@ -387,7 +387,7 @@ export default {
         
         this.makeCode();
       }, 50 * collection.length);
-      this.drawGif()
+      // this.drawGif()
       this.xmlDoc = null;
     },
     drawGif(){
@@ -990,7 +990,7 @@ input {
   width: 85%;
   /* height: 134px; */
   position: fixed;
-  bottom: 12.8%;
+  bottom: 13.5%;
   left: 7.5%;
   /* opacity: 0; */
 }
@@ -1016,7 +1016,7 @@ input {
   width: 64.86%;
   /* height: 134px; */
   position: fixed;
-  bottom: 12.8%;
+  bottom: 13.5%;
   left: 27.6%;
   display: none;
 }
@@ -1041,7 +1041,7 @@ input {
   width: 19.54%;
   /* height: 134px; */
   position: fixed;
-  bottom: 12.8%;
+  bottom: 13.5%;
   left: 7.5%;
   display: none;
 }
