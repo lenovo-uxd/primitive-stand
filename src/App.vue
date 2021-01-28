@@ -1,9 +1,11 @@
 <template>
   <div id="app">
     <div id="inputTextSvg" width="80%" height="200px"></div>
-    <div :class="
+    <div
+      :class="
         pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
-      ">
+      "
+    >
       <canvas id="canvas" width="1080px" height="1920px" />
     </div>
     <video
@@ -91,7 +93,7 @@
         pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'
       "
       @click="next"
-      src="/picture/btn0@x3.png"
+      :src="'/picture/btn0' + pageIndex + '@x3.png'"
       alt="button"
     />
     <img
@@ -110,7 +112,7 @@
       :src="'/picture/btn' + pageIndex + '@x3.png'"
       alt="button"
     />
-    
+
     <div v-show="false">
       <audio id="button-audio" src="/audio/button.mp3" preload />
       <audio id="count-audio" src="/audio/count.mp3" preload />
@@ -127,9 +129,9 @@ import { SVG } from "@svgdotjs/svg.js";
 // eslint-disable-next-line no-unused-vars
 import { WebGLImageFilter } from "./lib/webgl-image-filter";
 // import tracking from "./lib/tracking.js";
-import tracking from "./lib/tracking-min.js";
-import "./lib/face-min.js";
-import {GIF,URL} from "./lib/gif.js";
+// import tracking from "./lib/tracking-min.js";
+// import "./lib/face-min.js";
+// import {GIF,URL} from "./lib/gif.js";
 import axios from "axios";
 const CancelToken = axios.CancelToken;
 
@@ -159,8 +161,8 @@ export default {
   },
   methods: {
     next(e) {
-      if(this.pageIndex == 4){
-        return
+      if (this.pageIndex == 4) {
+        return;
       }
       document.getElementById("button-audio").play();
       this.pageIndex += 1;
@@ -180,10 +182,11 @@ export default {
             document.getElementsByClassName("show0")[0].style.opacity = 0;
             document.getElementsByClassName("btn00")[0].style.opacity = 1;
             document.getElementsByClassName("btn0")[0].style.display = "none";
-            document.getElementsByClassName("back-btn0")[0].style.display = "none";
-          })
+            document.getElementsByClassName("back-btn0")[0].style.display =
+              "none";
+          });
           // console.log(document.getElementsByClassName("show")[0])
-          
+
           this.input = "";
           break;
         }
@@ -191,8 +194,10 @@ export default {
           document.getElementById("videoel").play();
           document.getElementById("videoel").style.opacity = 1;
           setTimeout(() => {
-            document.getElementsByClassName("btn1234")[0].style.display = "block";
-            document.getElementsByClassName("back-btn1234")[0].style.display = "block";
+            document.getElementsByClassName("btn1234")[0].style.display =
+              "block";
+            document.getElementsByClassName("back-btn1234")[0].style.display =
+              "block";
             document.getElementsByClassName("btn01234")[0].style.opacity = 0;
           }, 900);
           break;
@@ -211,12 +216,12 @@ export default {
         }
         case 3: {
           // 显示键盘，输入文字
-          
+
           location.replace("tabkey:");
-          setTimeout(()=>{
+          setTimeout(() => {
             document.getElementById("input").focus();
-          }, 5000)
-          
+          }, 5000);
+
           break;
         }
         case 4: {
@@ -249,8 +254,8 @@ export default {
         btn.src = "/picture/back-normal@x3.png";
       }, 200);
       document.getElementById("button-audio").play();
-      if(this.pageIndex == 4){
-        return
+      if (this.pageIndex == 4) {
+        return;
       }
       this.pageIndex -= 1;
       switch (this.pageIndex) {
@@ -258,14 +263,15 @@ export default {
           document.getElementById("paint").innerHTML = "";
           document.getElementById("videoel").style.opacity = 0;
           document.getElementsByClassName("btn1234")[0].style.display = "none";
-          document.getElementsByClassName("back-btn1234")[0].style.display = "none";
+          document.getElementsByClassName("back-btn1234")[0].style.display =
+            "none";
           document.getElementsByClassName("btn01234")[0].style.opacity = 1;
           this.$nextTick(function () {
             // DOM 现在更新了
             // `this` 绑定到当前实例
             document.getElementsByClassName("show0")[0].style.opacity = 0;
             document.getElementsByClassName("btn00")[0].style.opacity = 1;
-          })
+          });
           this.input = "";
           break;
         }
@@ -361,9 +367,7 @@ export default {
         return;
       }
       let collection = this.xmlDoc.getElementsByTagName("rect");
-      let draw = SVG()
-        .addTo("#paint")
-        .size("100%", "100%");
+      let draw = SVG().addTo("#paint").size("100%", "100%");
       draw.attr("id", "draw");
       document.getElementById("videoel").style.opacity = 0;
       if (this.textObj == null || this.input == "") {
@@ -381,35 +385,53 @@ export default {
         this.pageIndex += 1;
         let paint = document.getElementById("paint");
         paint.style = "transform: scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
-        this.$nextTick(()=>{
-          document.getElementsByClassName("back-btn5")[0].style.display = "none";
-        })
-        
+        this.$nextTick(() => {
+          document.getElementsByClassName("back-btn5")[0].style.display =
+            "none";
+        });
+
         this.makeCode();
       }, 50 * collection.length);
-      // this.drawGif()
       this.xmlDoc = null;
+      this.drawGif(collection.length);
     },
-    drawGif(){
+    drawGif(length) {
+      // console.log(typeof GIF)
+      var img = new Image();
       var gif = new GIF({
-        workers: 2,
-        quality: 10
-      });
+              workers: 2,
+              quality: 10,
+            });
+      // for (let i = 0; i < length; i+=10) {
+        setTimeout(() => {
+          var svg = document.getElementById("paint").children[0].innerHTML;
+          // console.log(svg);
 
-      // add an image element
-      // gif.addFrame(imageElement);
+          //svg内容
+          // img.src = "data:image/svg+xml," + unescape(encodeURIComponent(svg)); //svg内容中可以有中文字符
+          img.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svg)));//svg内容中可以有中文字符
+          console.log(img);
+          img.onload = () => {
+            console.log("on;oa")
+            document.body.appendChild(img)
+            // add an image element
+            gif.addFrame(img, {delay: 50});
 
-      // or a canvas element
-      gif.addFrame(document.getElementById("paint"), {delay: 200});
+            // or a canvas element
+            // gif.addFrame(paint);
 
-      // or copy the pixels from a canvas context
-      // gif.addFrame(ctx, {copy: true});
+            // or copy the pixels from a canvas context
+            // gif.addFrame(ctx, {copy: true});
 
-      gif.on('finished', function(blob) {
-        window.open(URL.createObjectURL(blob));
-      });
+            gif.on("finished", function (blob) {
+              console.log("finished")
+              window.open(URL.createObjectURL(blob));
+            });
 
-      gif.render();
+            gif.render();
+          };
+        }, 500);
+      // }
     },
     addRect(draw, collection, i) {
       // console.log(i)
@@ -503,8 +525,8 @@ export default {
     },
     setVideoSrc() {
       // 想要获取一个最接近 1280x720 的相机分辨率
-      // var constraints = { audio: false, video: { width: 810, height: 1080 } };
-      var constraints = { audio: false, video: { width: 360, height: 480 } };
+      var constraints = { audio: false, video: { width: 810, height: 1080 } };
+      // var constraints = { audio: false, video: { width: 360, height: 480 } };
 
       navigator.mediaDevices
         .getUserMedia(constraints)
@@ -515,7 +537,7 @@ export default {
             this.videoObj.play();
           };
         })
-        .catch(function(err) {
+        .catch(function (err) {
           console.log(err.name + ": " + err.message);
         }); // 总是在最后检查错误
     },
@@ -575,7 +597,7 @@ export default {
       let qrcode = document.getElementById("qrcode");
       // console.log(qrcode)
       let url = "http://xiaohui.ai";
-      QRCode.toCanvas(qrcode, url, function(error) {
+      QRCode.toCanvas(qrcode, url, function (error) {
         if (error) console.error(error);
         // console.log('success!');
       });
@@ -616,7 +638,7 @@ export default {
       var file = document.querySelector("input[type=file]").files[0];
       var reader = new FileReader();
 
-      reader.onloadend = function() {
+      reader.onloadend = function () {
         preview.src = reader.result;
         // console.log(preview.src);
       };
@@ -693,9 +715,9 @@ export default {
       // console.log(img)
       window.tracking.track(canvas, tracker);
       console.log(window.tracking);
-      tracker.on("track", function(event) {
+      tracker.on("track", function (event) {
         console.log(event);
-        event.data.forEach(function(rect) {
+        event.data.forEach(function (rect) {
           console.log(rect);
           // window.plot(rect.x, rect.y, rect.width, rect.height);
         });
@@ -713,9 +735,9 @@ export default {
       tracker.setEdgesDensity(0.1);
       // 启动摄像头初始化
       this.trackerTask = window.tracking.track("#canvas", tracker);
-      tracker.on("track", function(event) {
+      tracker.on("track", function (event) {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        event.data.forEach(function(rect) {
+        event.data.forEach(function (rect) {
           context.strokeStyle = "#ff0000";
           context.strokeRect(rect.x, rect.y, rect.width, rect.height);
         });
@@ -735,13 +757,11 @@ export default {
       this.setText();
     },
   },
-  mounted: function() {
+  mounted: function () {
     // let ratio = this.getRatio()
     // console.log(ratio)
     this.videoObj = document.getElementById("videoel");
-    this.textSvgObj = SVG()
-      .addTo("#inputTextSvg")
-      .size("100%", "100%");
+    this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
     this.setVideoSrc();
   },
 };
@@ -976,7 +996,7 @@ input {
   color: cadetblue;
 }
 .btn00 {
-  transition-property: width, left, bottom, position; 
+  transition-property: width, left, bottom, position;
   transition-duration: 1s, 1s, 1s, 1s;
   width: 68.8%;
   /* height: 134px; */
