@@ -3,9 +3,50 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
+var fs = require("fs")
 var app = express();
 var port = 3000;
+var imgPath = './public/save/'
 
+function makeVideo(images) {
+  const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+  const ffprobePath = require('@ffprobe-installer/ffprobe').path;
+  const ffmpeg = require('fluent-ffmpeg');
+  ffmpeg.setFfmpegPath(ffmpegPath);
+  ffmpeg.setFfprobePath(ffprobePath);
+  // ffmpeg.setFfmpegPath(path.join(__dirname, '/ffmpeg/bin/ffmpeg.exe'));
+  // ffmpeg.setFfprobePath(path.join(__dirname, '/ffmpeg/bin/ffprobe.exe'));
+  var videoshow = require("videoshow");
+  // console.log("gh")
+  // var images = ["me.jpeg", "me.jpeg", "me.jpeg", "me.jpeg"];
+
+  var videoOptions = {
+    fps: 25,
+    loop: 0.1, // seconds
+    transition: false,
+    transitionDuration: 0, // seconds
+    videoBitrate: 1024,
+    videoCodec: 'libx264',
+    size: '640x?',
+    audioBitrate: '128k',
+    audioChannels: 2,
+    format: 'mp4',
+    pixelFormat: 'yuv420p'
+  }
+  // console.log("gh")
+  videoshow(images, videoOptions)
+    .save(imgPath+"video.mp4")
+    .on("start", function (command) {
+      console.log("ffmpeg process started:", command);
+    })
+    .on("error", function (err, stdout, stderr) {
+      console.error("Error:", err);
+      console.error("ffmpeg stderr:", stderr);
+    })
+    .on("end", function (output) {
+      console.error("Video created in:", output);
+    });
+}
 app.use(bodyParser.json({limit:'50mb'}));
 app.use(bodyParser.urlencoded({limit:'50mb',extended:true}));
 
@@ -44,6 +85,29 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+app.post("/make-video", function(req, res){
+  // console.log(req)
+  let imageNames=[]
+  let imageBase64=req.body.data
+  // console.log(imageBase64)
+  for(let i = 0; i < imageBase64.length;  i++){
+    var base64Data = imageBase64[i].replace(/^data:image\/\w+;base64,/, "");
+    var dataBuffer = Buffer.from(base64Data, 'base64'); // 解码图片
+    // var dataBuffer = Buffer.from(base64Data, 'base64'); // 这是另一种写法
+    fs.writeFile(imgPath+i+".jpg", dataBuffer, function(err) {
+        if(err){
+          // res.send(err);
+          console.log(err);
+        }else{
+          // res.send("保存成功！");
+          console.log("保存成功！");
+        }
+    });
+    imageNames.push(imgPath+i+'.jpg')
+  }
+  makeVideo(imageNames)
+  res.json({"success":true})
+})
 
 app.post("/getsvg", function (req, res) {
   var Jimp = require('jimp');

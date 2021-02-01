@@ -1,6 +1,10 @@
 <template>
   <div id="app">
+    <canvas id="drawFrame" style="display: none" />
     <div id="inputTextSvg" width="80%" height="200px"></div>
+    <div :class="
+        pageIndex == 0 || pageIndex == 5 ? 'bg' + pageIndex : 'bg1234'
+      "></div>
     <div
       :class="
         pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
@@ -8,6 +12,7 @@
     >
       <canvas id="canvas" width="1080px" height="1920px" />
     </div>
+
     <video
       :class="
         pageIndex == 0 || pageIndex == 5 ? 'screen' + pageIndex : 'screen1234'
@@ -69,14 +74,14 @@
         :value="input"
         class="input"
         @input="onInputChange"
-        placeholder="输入名字"
+        placeholder="点击输入名字"
         autocomplete="off"
       />
-      <SimpleKeyboard
+      <!-- <SimpleKeyboard
         @onChange="onChange"
         @onKeyPress="onKeyPress"
         :input="input"
-      />
+      /> -->
     </div>
     <img
       :class="
@@ -157,6 +162,7 @@ export default {
       maxHeight: 500,
       xmlDoc: null,
       cancelAjax: null,
+      screenshots: [],
     };
   },
   methods: {
@@ -217,10 +223,10 @@ export default {
         case 3: {
           // 显示键盘，输入文字
 
-          location.replace("tabkey:");
-          setTimeout(() => {
+          // location.replace("tabkey:");
+          this.$nextTick(() => {
             document.getElementById("input").focus();
-          }, 5000);
+          });
 
           break;
         }
@@ -376,12 +382,17 @@ export default {
       }
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
+          if (i % 4 == 0) {
+            // console.log(i);
+            this.addFrame(i);
+          }
           document.getElementsByClassName("show1234")[0].style.opacity =
             i / collection.length;
           this.addRect(draw, collection, i);
         }, 50 * i);
       }
       setTimeout(() => {
+        this.postImages();
         this.pageIndex += 1;
         let paint = document.getElementById("paint");
         paint.style = "transform: scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
@@ -393,45 +404,79 @@ export default {
         this.makeCode();
       }, 50 * collection.length);
       this.xmlDoc = null;
-      this.drawGif(collection.length);
     },
-    drawGif(length) {
-      // console.log(typeof GIF)
-      var img = new Image();
-      var gif = new GIF({
-              workers: 2,
-              quality: 10,
-            });
-      // for (let i = 0; i < length; i+=10) {
-        setTimeout(() => {
-          var svg = document.getElementById("paint").children[0].innerHTML;
-          // console.log(svg);
+    addFrame(i) {
+      // var svg = document.getElementById("draw").innerHTML;
+      var svg = document.getElementById("draw").outerHTML;
+      var canvas = document.getElementById("drawFrame");
+      var c = canvas.getContext("2d");
+      // var img = new Image()
+      var img = document.createElement("img");
+      img.width = 862;
+      img.height = 1150;
+      document.body.append(img);
+      //svg内容
+      // img.src = "data:image/svg+xml," + unescape(encodeURIComponent(svg)); //svg内容中可以有中文字符
 
-          //svg内容
-          // img.src = "data:image/svg+xml," + unescape(encodeURIComponent(svg)); //svg内容中可以有中文字符
-          img.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svg)));//svg内容中可以有中文字符
-          console.log(img);
-          img.onload = () => {
-            console.log("on;oa")
-            document.body.appendChild(img)
-            // add an image element
-            gif.addFrame(img, {delay: 50});
+      // console.log([document.getElementById("draw")]);
+      // console.log(SVG("#draw"));
+      // console.log(SVG("#draw").svg());
+      // console.log(document.getElementById("draw").innerHTML);
+      // console.log(img.src);
+      img.onload = () => {
+        //将canvas的宽高设置为图像的宽高
+        canvas.width = img.width;
+        canvas.height = img.height;
+        console.log(img.width, img.height);
+        //canvas画图片
+        if (i !== 0) {
+          c.drawImage(
+            document.getElementById("canvas"),
+            0,
+            0,
+            img.width,
+            img.height
+          );
+        }
+        c.drawImage(img, 0, 0);
+        this.screenshots.push(canvas.toDataURL("image/png"));
+        // console.log(this.screenshots);
+      };
+      img.onerror = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        console.log(img.width, img.height);
+        //canvas画图片
+        c.drawImage(img, 0, 0, 689, 920);
+        this.screenshots.push(canvas.toDataURL("image/png"));
+        // console.log(this.screenshots);
+      };
+      //svg内容
+      // img.src = "data:image/svg+xml," + unescape(encodeURIComponent(svg)); //svg内容中可以有中文字符
+      // img.src = 'data:image/svg+xml,' + svg;//svg内容中不能有中文字符
 
-            // or a canvas element
-            // gif.addFrame(paint);
-
-            // or copy the pixels from a canvas context
-            // gif.addFrame(ctx, {copy: true});
-
-            gif.on("finished", function (blob) {
-              console.log("finished")
-              window.open(URL.createObjectURL(blob));
-            });
-
-            gif.render();
-          };
-        }, 500);
-      // }
+      // //svg编码成base64
+      img.src =
+        "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg))); //svg内容中可以有中文字符
+      // console.log(img.src)
+      // img.src = 'data:image/svg+xml;base64,' + window.btoa(svg);//svg内容中不能有中文字符
+    },
+    postImages() {
+      var images = this.screenshots;
+      // console.log(images);
+      var settings = {
+        url: "http://localhost:3000/make-video",
+        method: "POST",
+        timeout: 0,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify({ data: images }),
+      };
+      axios(settings).then((res) => {
+        console.log(res);
+        this.screenshots = [];
+      });
     },
     addRect(draw, collection, i) {
       // console.log(i)
@@ -492,7 +537,9 @@ export default {
 
       let text = this.textObj.text();
       group.plain(text);
-
+      group.attr("font-size", "100px");
+      group.attr("font-weight", "bold");
+      group.attr("font-family", "fantasy");
       if (width > height) {
         // 水平
         group.attr(
@@ -872,6 +919,32 @@ export default {
   transform: scale(0.8);
   transform-origin: 50% 35%;
 }
+.bg0 {
+  width: 63%;
+  position: fixed;
+  left: 18.5%;
+  top: 17%;
+  background: black;
+  opacity: 0;
+}
+.bg1234 {
+  transition: all 1s;
+  position: fixed;
+  left: 10.09%;
+  top: 10%;
+  width: 862px;
+  height: 1150px;
+  background: black;
+}
+.bg5 {
+  position: fixed;
+  transition: all 1s;
+  width: 63%;
+  position: fixed;
+  left: 18.5%;
+  top: 17%;
+  background: black;
+}
 #canvas {
   width: 862px;
   height: 1150px;
@@ -969,9 +1042,9 @@ body {
 
 .input-container {
   position: fixed;
-  width: 79.815%;
-  left: 10.09%;
-  bottom: 30%;
+  width: 77%;
+  left: 11.5%;
+  bottom: 32%;
 }
 input {
   text-align: center;
