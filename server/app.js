@@ -6,7 +6,7 @@ var bodyParser = require('body-parser');
 var fs = require("fs")
 var app = express();
 var port = 3000;
-var imgPath = './public/save/'
+var imgPath = path.join(__dirname, '/public/save/')
 
 function makeVideo(images) {
   const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
@@ -100,12 +100,15 @@ app.post("/make-video", function(req, res){
           console.log(err);
         }else{
           // res.send("保存成功！");
-          console.log("保存成功！");
+          console.log(i+'.jpg保存成功！');
+          imageNames.push(imgPath+i+'.jpg')
+          if(i == imageBase64.length-1){
+            makeVideo(imageNames)
+          }
         }
     });
-    imageNames.push(imgPath+i+'.jpg')
   }
-  makeVideo(imageNames)
+  
   res.json({"success":true})
 })
 

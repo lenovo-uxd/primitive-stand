@@ -117,7 +117,7 @@
       :src="'/picture/btn' + pageIndex + '@x3.png'"
       alt="button"
     />
-
+    <img class="loading" src="/picture/loading.gif" v-show="isLoading"/>
     <div v-show="false">
       <audio id="button-audio" src="/audio/button.mp3" preload />
       <audio id="count-audio" src="/audio/count.mp3" preload />
@@ -163,6 +163,7 @@ export default {
       xmlDoc: null,
       cancelAjax: null,
       screenshots: [],
+      isLoading: false,
     };
   },
   methods: {
@@ -239,6 +240,7 @@ export default {
             btn.src = "/picture/btn4@x3.png";
           }, 200);
           this.drawSvg();
+          this.isLoading = true;
           break;
         }
         case 5: {
@@ -380,6 +382,7 @@ export default {
         this.input = "LENOVO";
         this.setText();
       }
+      this.isLoading = false;
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
           if (i % 4 == 0) {
@@ -414,7 +417,7 @@ export default {
       var img = document.createElement("img");
       img.width = 862;
       img.height = 1150;
-      document.body.append(img);
+      // document.body.append(img);
       //svg内容
       // img.src = "data:image/svg+xml," + unescape(encodeURIComponent(svg)); //svg内容中可以有中文字符
 
@@ -1165,5 +1168,13 @@ input {
   position: fixed;
   bottom: 1.5%;
   left: 40.385%;
+}
+.loading{
+  position: fixed;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  top: 36%;
+  left: 44.44%;
 }
 </style>
