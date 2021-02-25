@@ -387,7 +387,7 @@ export default {
         setTimeout(() => {
           if (i % 4 == 0) {
             // console.log(i);
-            this.addFrame(i);
+            this.addFrame(i/4);
           }
           document.getElementsByClassName("show1234")[0].style.opacity =
             i / collection.length;
@@ -430,7 +430,7 @@ export default {
         //将canvas的宽高设置为图像的宽高
         canvas.width = img.width;
         canvas.height = img.height;
-        console.log(img.width, img.height);
+        // console.log(img.width, img.height);
         //canvas画图片
         if (i !== 0) {
           c.drawImage(
@@ -442,16 +442,16 @@ export default {
           );
         }
         c.drawImage(img, 0, 0);
-        this.screenshots.push(canvas.toDataURL("image/png"));
+        this.screenshots[i]=canvas.toDataURL("image/png");
         // console.log(this.screenshots);
       };
       img.onerror = () => {
         canvas.width = img.width;
         canvas.height = img.height;
-        console.log(img.width, img.height);
+        // console.log(img.width, img.height);
         //canvas画图片
         c.drawImage(img, 0, 0, 689, 920);
-        this.screenshots.push(canvas.toDataURL("image/png"));
+        this.screenshots[i]=canvas.toDataURL("image/png");
         // console.log(this.screenshots);
       };
       //svg内容

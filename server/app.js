@@ -9,6 +9,7 @@ var port = 3000;
 var imgPath = path.join(__dirname, '/public/save/')
 
 function makeVideo(images) {
+  // console.log(images)
   const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
   const ffprobePath = require('@ffprobe-installer/ffprobe').path;
   const ffmpeg = require('fluent-ffmpeg');
@@ -89,20 +90,21 @@ app.post("/make-video", function(req, res){
   // console.log(req)
   let imageNames=[]
   let imageBase64=req.body.data
+  let savedNum = 0;
   // console.log(imageBase64)
   for(let i = 0; i < imageBase64.length;  i++){
     var base64Data = imageBase64[i].replace(/^data:image\/\w+;base64,/, "");
     var dataBuffer = Buffer.from(base64Data, 'base64'); // 解码图片
-    // var dataBuffer = Buffer.from(base64Data, 'base64'); // 这是另一种写法
     fs.writeFile(imgPath+i+".jpg", dataBuffer, function(err) {
         if(err){
           // res.send(err);
           console.log(err);
         }else{
           // res.send("保存成功！");
+          savedNum += 1;
           console.log(i+'.jpg保存成功！');
-          imageNames.push(imgPath+i+'.jpg')
-          if(i == imageBase64.length-1){
+          imageNames[i]=imgPath+i+'.jpg'
+          if(savedNum >= imageBase64.length){
             makeVideo(imageNames)
           }
         }
