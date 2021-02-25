@@ -2,9 +2,9 @@
   <div id="app">
     <canvas id="drawFrame" style="display: none" />
     <div id="inputTextSvg" width="80%" height="200px"></div>
-    <div :class="
-        pageIndex == 0 || pageIndex == 5 ? 'bg' + pageIndex : 'bg1234'
-      "></div>
+    <div
+      :class="pageIndex == 0 || pageIndex == 5 ? 'bg' + pageIndex : 'bg1234'"
+    ></div>
     <div
       :class="
         pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
@@ -92,7 +92,10 @@
       :src="'/picture/infobottom' + pageIndex + '@x3.png'"
       alt="info bottom"
     />
-    <canvas v-show="pageIndex == 5" id="qrcode"></canvas>
+    <!-- <canvas v-show="pageIndex == 5" id="qrcode"></canvas> -->
+    <img v-show="pageIndex == 5" id="qrcode" src="/picture/qrcode.jpg"></img>
+    
+    <div v-show="pageIndex == 5" class="timestamp">{{ timestamp }}</div>
     <img
       :class="
         pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'
@@ -117,7 +120,7 @@
       :src="'/picture/btn' + pageIndex + '@x3.png'"
       alt="button"
     />
-    <img class="loading" src="/picture/loading.gif" v-show="isLoading"/>
+    <img class="loading" src="/picture/loading.gif" v-show="isLoading && pageIndex == 4" />
     <div v-show="false">
       <audio id="button-audio" src="/audio/button.mp3" preload />
       <audio id="count-audio" src="/audio/count.mp3" preload />
@@ -129,7 +132,7 @@
 
 <script>
 import SimpleKeyboard from "./components/SimpleKeyboard.vue";
-import QRCode from "qrcode";
+// import QRCode from "qrcode";
 import { SVG } from "@svgdotjs/svg.js";
 // eslint-disable-next-line no-unused-vars
 import { WebGLImageFilter } from "./lib/webgl-image-filter";
@@ -164,6 +167,7 @@ export default {
       cancelAjax: null,
       screenshots: [],
       isLoading: false,
+      timestamp: "",
     };
   },
   methods: {
@@ -239,8 +243,12 @@ export default {
           setTimeout(() => {
             btn.src = "/picture/btn4@x3.png";
           }, 200);
+          if(this.xmlDoc == null){
+            this.isLoading = true;
+          }
           this.drawSvg();
-          this.isLoading = true;
+          
+          
           break;
         }
         case 5: {
@@ -374,6 +382,7 @@ export default {
         }, 500);
         return;
       }
+      this.isLoading = false;
       let collection = this.xmlDoc.getElementsByTagName("rect");
       let draw = SVG().addTo("#paint").size("100%", "100%");
       draw.attr("id", "draw");
@@ -382,12 +391,11 @@ export default {
         this.input = "LENOVO";
         this.setText();
       }
-      this.isLoading = false;
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
           if (i % 4 == 0) {
             // console.log(i);
-            this.addFrame(i/4);
+            this.addFrame(i / 4);
           }
           document.getElementsByClassName("show1234")[0].style.opacity =
             i / collection.length;
@@ -404,7 +412,7 @@ export default {
             "none";
         });
 
-        this.makeCode();
+        // this.makeCode();
       }, 50 * collection.length);
       this.xmlDoc = null;
     },
@@ -442,7 +450,7 @@ export default {
           );
         }
         c.drawImage(img, 0, 0);
-        this.screenshots[i]=canvas.toDataURL("image/png");
+        this.screenshots[i] = canvas.toDataURL("image/png");
         // console.log(this.screenshots);
       };
       img.onerror = () => {
@@ -451,7 +459,7 @@ export default {
         // console.log(img.width, img.height);
         //canvas画图片
         c.drawImage(img, 0, 0, 689, 920);
-        this.screenshots[i]=canvas.toDataURL("image/png");
+        this.screenshots[i] = canvas.toDataURL("image/png");
         // console.log(this.screenshots);
       };
       //svg内容
@@ -465,6 +473,14 @@ export default {
       // img.src = 'data:image/svg+xml;base64,' + window.btoa(svg);//svg内容中不能有中文字符
     },
     postImages() {
+      let now = new Date();
+      let addZero = (str) => {
+        return str.length == 2 ? str : "0" + str;
+      };
+      this.timestamp =
+        addZero(now.getHours().toString()) +
+        addZero(now.getMinutes().toString()) +
+        addZero(now.getSeconds().toString());
       var images = this.screenshots;
       // console.log(images);
       var settings = {
@@ -474,7 +490,7 @@ export default {
         headers: {
           "Content-Type": "application/json",
         },
-        data: JSON.stringify({ data: images }),
+        data: JSON.stringify({ data: images, timestamp: this.timestamp }),
       };
       axios(settings).then((res) => {
         console.log(res);
@@ -716,6 +732,7 @@ export default {
       axios(settings).then((res) => {
         // console.log(res);
         this.xmlDoc = this.xmlParse(res.data.data);
+        // this.isLoading = false;
       });
     },
     getFaceLocation() {
@@ -966,7 +983,7 @@ export default {
   position: fixed;
   /* display: inline; */
   left: 40.74%;
-  bottom: 4%;
+  bottom: 4.7%;
   width: 200px !important;
   height: 200px !important;
 }
@@ -1169,12 +1186,21 @@ input {
   bottom: 1.5%;
   left: 40.385%;
 }
-.loading{
+.loading {
   position: fixed;
   width: 120px;
   height: 120px;
   border-radius: 50%;
   top: 36%;
   left: 44.44%;
+}
+.timestamp {
+  background: white;
+  color: black;
+  position: fixed;
+  bottom: 3.5%;
+  left: 40.74%;
+  width: 200px;
+  font-size: 30px;
 }
 </style>

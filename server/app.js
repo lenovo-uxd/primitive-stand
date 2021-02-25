@@ -7,8 +7,8 @@ var fs = require("fs")
 var app = express();
 var port = 3000;
 var imgPath = path.join(__dirname, '/public/save/')
-
-function makeVideo(images) {
+app.use(express.static("public"));
+function makeVideo(images, timestamp) {
   // console.log(images)
   const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
   const ffprobePath = require('@ffprobe-installer/ffprobe').path;
@@ -36,7 +36,7 @@ function makeVideo(images) {
   }
   // console.log("gh")
   videoshow(images, videoOptions)
-    .save(imgPath+"video.mp4")
+    .save(imgPath+timestamp+".mp4")
     .on("start", function (command) {
       console.log("ffmpeg process started:", command);
     })
@@ -90,6 +90,7 @@ app.post("/make-video", function(req, res){
   // console.log(req)
   let imageNames=[]
   let imageBase64=req.body.data
+  let timestamp = req.body.timestamp
   let savedNum = 0;
   // console.log(imageBase64)
   for(let i = 0; i < imageBase64.length;  i++){
@@ -105,7 +106,7 @@ app.post("/make-video", function(req, res){
           console.log(i+'.jpg保存成功！');
           imageNames[i]=imgPath+i+'.jpg'
           if(savedNum >= imageBase64.length){
-            makeVideo(imageNames)
+            makeVideo(imageNames, timestamp)
           }
         }
     });
