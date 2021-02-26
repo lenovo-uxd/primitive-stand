@@ -4,10 +4,37 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var fs = require("fs")
+const axios = require('axios');
+const FormData = require('form-data');
 var app = express();
 var port = 3000;
 var imgPath = path.join(__dirname, '/public/save/')
 app.use(express.static("public"));
+
+function postVideo(path) {
+  var localFile = fs.createReadStream(path);
+
+  var formData = new FormData();
+  formData.append('myfile', localFile);
+
+  var headers = formData.getHeaders();//获取headers
+  //获取form-data长度
+  formData.getLength(async function (err, length) {
+    if (err) {
+      return;
+    }
+    //设置长度，important!!!
+    headers['content-length'] = length;
+
+    await axios.post('http://xiaohui.ai:3004/upload', formData, { headers }).then(res => {
+      console.log("上传成功", res.data);
+    }).catch(res => {
+      console.log(res.data);
+    })
+
+  })
+}
+// postVideo("E:\\Desktop\\practice\\Lenovo\\primitive-stand\\server\\public\\save\\151627.mp4")
 function makeVideo(images, timestamp) {
   // console.log(images)
   const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
@@ -36,7 +63,7 @@ function makeVideo(images, timestamp) {
   }
   // console.log("gh")
   videoshow(images, videoOptions)
-    .save(imgPath+timestamp+".mp4")
+    .save(imgPath + timestamp + ".mp4")
     .on("start", function (command) {
       console.log("ffmpeg process started:", command);
     })
@@ -46,10 +73,11 @@ function makeVideo(images, timestamp) {
     })
     .on("end", function (output) {
       console.error("Video created in:", output);
+      postVideo(imgPath + timestamp + ".mp4")
     });
 }
-app.use(bodyParser.json({limit:'50mb'}));
-app.use(bodyParser.urlencoded({limit:'50mb',extended:true}));
+app.use(bodyParser.json({ limit: '500mb' }));
+app.use(bodyParser.urlencoded({ limit: '500mb', extended: true }));
 
 //设置允许跨域访问该服务.
 app.all('*', function (req, res, next) {
@@ -86,33 +114,33 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-app.post("/make-video", function(req, res){
+app.post("/make-video", function (req, res) {
   // console.log(req)
-  let imageNames=[]
-  let imageBase64=req.body.data
+  let imageNames = []
+  let imageBase64 = req.body.data
   let timestamp = req.body.timestamp
   let savedNum = 0;
   // console.log(imageBase64)
-  for(let i = 0; i < imageBase64.length;  i++){
+  for (let i = 0; i < imageBase64.length; i++) {
     var base64Data = imageBase64[i].replace(/^data:image\/\w+;base64,/, "");
     var dataBuffer = Buffer.from(base64Data, 'base64'); // 解码图片
-    fs.writeFile(imgPath+i+".jpg", dataBuffer, function(err) {
-        if(err){
-          // res.send(err);
-          console.log(err);
-        }else{
-          // res.send("保存成功！");
-          savedNum += 1;
-          console.log(i+'.jpg保存成功！');
-          imageNames[i]=imgPath+i+'.jpg'
-          if(savedNum >= imageBase64.length){
-            makeVideo(imageNames, timestamp)
-          }
+    fs.writeFile(imgPath + i + ".jpg", dataBuffer, function (err) {
+      if (err) {
+        // res.send(err);
+        console.log(err);
+      } else {
+        // res.send("保存成功！");
+        savedNum += 1;
+        console.log(i + '.jpg保存成功！');
+        imageNames[i] = imgPath + i + '.jpg'
+        if (savedNum >= imageBase64.length) {
+          makeVideo(imageNames, timestamp)
         }
+      }
     });
   }
-  
-  res.json({"success":true})
+
+  res.json({ "success": true })
 })
 
 app.post("/getsvg", function (req, res) {
