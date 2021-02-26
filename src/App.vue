@@ -77,6 +77,7 @@
         placeholder="点击输入名字"
         autocomplete="off"
       />
+      <img src="/picture/finishbtn.png" class="finish-btn" @click="next"/>
       <!-- <SimpleKeyboard
         @onChange="onChange"
         @onKeyPress="onKeyPress"
@@ -860,10 +861,11 @@ export default {
   bottom: 20%;
   left: 13%;
 }
-/* #videoel {
-  transform: scale(1.065);
-  transform-origin: 50% -250%;
-} */
+#videoel {
+  /* transform: scale(1.065); */
+  /* transform-origin: 50% -250%; */
+  transform: rotateY(180deg);
+}
 .screen0 {
   transition: all 1s;
   width: 63%;
@@ -930,6 +932,7 @@ export default {
   opacity: 0;
 }
 .show5 {
+  transition: all 1s;
   position: fixed;
   left: 10.09%;
   top: 10%;
@@ -1061,14 +1064,16 @@ body {
 }
 
 .input-container {
+  text-align: left;
   position: fixed;
   width: 77%;
   left: 11.5%;
   bottom: 32%;
+      /* border: beige 2px solid; */
 }
 input {
-  text-align: center;
-  width: 100%;
+  text-align: left;
+  width: 75%;
   height: 200px;
   padding: 20px;
   font-size: 80px;
@@ -1202,5 +1207,11 @@ input {
   left: 40.74%;
   width: 200px;
   font-size: 30px;
+}
+.finish-btn{
+  position: fixed;
+  height: 200px;
+  /* right: 20%; */
+
 }
 </style>
