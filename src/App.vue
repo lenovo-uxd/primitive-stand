@@ -1,5 +1,7 @@
 <template>
   <div id="app">
+    <img id="shareBg" src="/picture/share-bg.png" style="visibility: hidden; width: 1080px; height: 1920px;"/>
+    <!-- <canvas id="sharePicture" style="display: none; width: 1080px; height: 1920px;"/> -->
     <canvas id="drawFrame" style="display: none" />
     <div id="inputTextSvg" width="80%" height="200px"></div>
     <div
@@ -41,7 +43,7 @@
       v-show="pageIndex >= 4"
       :style="
         pageIndex == 5
-          ? 'transform: scale(0.8); transform-origin: 50% 35%;'
+          ? 'transform: scale(0.8) rotateY(180deg); transform-origin: 50% 35%;'
           : ''
       "
     ></div>
@@ -74,10 +76,12 @@
         :value="input"
         class="input"
         @input="onInputChange"
+        @focus="isInputting=true;"
+        @blur="isInputting=false;"
         placeholder="点击输入名字"
         autocomplete="off"
       />
-      <img src="/picture/finishbtn.png" class="finish-btn" @click="next"/>
+      <img src="/picture/finishbtn.png" class="finish-btn" v-show="isInputting"/>
       <!-- <SimpleKeyboard
         @onChange="onChange"
         @onKeyPress="onKeyPress"
@@ -97,13 +101,23 @@
     <img v-show="pageIndex == 5" id="qrcode" src="/picture/qrcode.jpg"></img>
     
     <div v-show="pageIndex == 5" class="timestamp">{{ timestamp }}</div>
-    <img
+    <!-- <img
       :class="
         pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'
       "
       @click="next"
       :src="'/picture/btn0' + pageIndex + '@x3.png'"
       alt="button"
+      v-show="pageIndex != 3"
+    /> -->
+    <img
+      :class="
+        pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'
+      "
+      @click="firstPageAni"
+      src="/picture/btn00@x3.png"
+      alt="button"
+      v-show="pageIndex != 3"
     />
     <img
       :class="
@@ -128,6 +142,7 @@
       <audio id="keyboard-audio" src="/audio/keyboard.mp3" preload />
       <audio id="shoot-audio" src="/audio/shoot.mp3" preload />
     </div>
+    <canvas id="sharePicture" style="display: none; position:fixed; left:0; top:0; width: 1080px; height: 1920px;"/>
   </div>
 </template>
 
@@ -152,7 +167,7 @@ export default {
   data() {
     return {
       pageIndex: 0,
-      isInputing: true,
+      isInputting: false,
       // 包含text的svg对象
       textSvgObj: null,
       // text元素对象
@@ -172,6 +187,17 @@ export default {
     };
   },
   methods: {
+    firstPageAni(e){
+      let btn = e.target;
+      setTimeout(() => {
+        btn.src = "/picture/btn01@x3.png";
+      }, 50);
+
+      setTimeout(() => {
+        btn.src = "/picture/btn00@x3.png";
+        this.next(e)
+      }, 200);
+    },
     next(e) {
       if (this.pageIndex == 4) {
         return;
@@ -211,7 +237,7 @@ export default {
             document.getElementsByClassName("back-btn1234")[0].style.display =
               "block";
             document.getElementsByClassName("btn01234")[0].style.opacity = 0;
-          }, 900);
+          }, 600);
           break;
         }
         case 2: {
@@ -257,6 +283,7 @@ export default {
           // paint.style = "transform: scale(0.8); transform-origin: 50% 80%;";
           // // 绘制二维码并显示
           // this.makeCode();
+          
           break;
         }
       }
@@ -367,7 +394,7 @@ export default {
           this.videoObj.pause();
           // eslint-disable-next-line no-unused-vars
           let base64 = this.drawPhoto();
-          this.getFaceLocation();
+          // this.getFaceLocation();
           // console.log(base64)
           // 调用api，并绘制svg
           this.getSvg(base64);
@@ -406,8 +433,8 @@ export default {
       setTimeout(() => {
         this.postImages();
         this.pageIndex += 1;
-        let paint = document.getElementById("paint");
-        paint.style = "transform: scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
+        // let paint = document.getElementById("paint");
+        // paint.style = "transform: rotateY(180deg) scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
         this.$nextTick(() => {
           document.getElementsByClassName("back-btn5")[0].style.display =
             "none";
@@ -474,6 +501,7 @@ export default {
       // img.src = 'data:image/svg+xml;base64,' + window.btoa(svg);//svg内容中不能有中文字符
     },
     postImages() {
+      // 按时间生成编号
       let now = new Date();
       let addZero = (str) => {
         return str.length == 2 ? str : "0" + str;
@@ -482,6 +510,7 @@ export default {
         addZero(now.getHours().toString()) +
         addZero(now.getMinutes().toString()) +
         addZero(now.getSeconds().toString());
+      // 传送截图给后端
       var images = this.screenshots;
       // console.log(images);
       var settings = {
@@ -497,6 +526,19 @@ export default {
         console.log(res);
         this.screenshots = [];
       });
+
+      // 生成分享图
+      let sharePicture = document.getElementById("sharePicture");
+      sharePicture.style.display="block";
+      const ctx = sharePicture.getContext('2d');
+      let shareBg = document.getElementById("shareBg");
+      let lastFrame = document.getElementById("drawFrame");
+      let qrcode = document.getElementById("qrcode");
+      // (image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+      ctx.drawImage(shareBg,0,0,1080,1920)
+      // ctx.drawImage(shareBg,0,0,1080,1920,0,0,1080,1920)
+      // ctx.drawImage(lastFrame,0,0,862,1150,0,20,1080,1440)
+      // ctx.drawImage(qrcode,0,0,200,200,700,1520,200,200)
     },
     addRect(draw, collection, i) {
       // console.log(i)
@@ -821,7 +863,7 @@ export default {
     },
     onInputChange(input) {
       // this.input = input.target.value.toUpperCase();
-      this.input = input.target.value;
+      this.input = input.target.value.replace(/[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF][\u200D|\uFE0F]|[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF]|[0-9|*|#]\uFE0F\u20E3|[0-9|#]\u20E3|[\u203C-\u3299]\uFE0F\u200D|[\u203C-\u3299]\uFE0F|[\u2122-\u2B55]|\u303D|[\A9|\AE]\u3030|\uA9|\uAE|\u3030/ig, '');
       this.setText();
     },
   },
@@ -922,6 +964,7 @@ export default {
   width: 862px;
   height: 1150px;
   opacity: 0;
+  transform: rotateY(180deg);
 }
 .show1234 {
   position: fixed;
@@ -930,6 +973,7 @@ export default {
   width: 862px;
   height: 1150px;
   opacity: 0;
+  transform: rotateY(180deg);
 }
 .show5 {
   transition: all 1s;
@@ -939,7 +983,7 @@ export default {
   width: 862px;
   height: 1150px;
   opacity: 1;
-  transform: scale(0.8);
+  transform: scale(0.8) rotateY(180deg);
   transform-origin: 50% 35%;
 }
 .bg0 {
@@ -997,6 +1041,7 @@ export default {
   height: 59.896%;
   left: 10.09%;
   top: 10%;
+  transform: rotateY(180deg);
 }
 
 body {
@@ -1073,7 +1118,7 @@ body {
 }
 input {
   text-align: left;
-  width: 75%;
+  width: 100%;
   height: 200px;
   padding: 20px;
   font-size: 80px;
@@ -1211,7 +1256,7 @@ input {
 .finish-btn{
   position: fixed;
   height: 200px;
-  /* right: 20%; */
+  right: 12%;
 
 }
 </style>
