@@ -142,7 +142,22 @@ app.post("/make-video", function (req, res) {
 
   res.json({ "success": true })
 })
-
+app.post("/poster", function (req, res) {
+  let posterBase64 = req.body.data.replace(/^data:image\/\w+;base64,/, "");
+  let timestamp = req.body.timestamp
+  // console.log(posterBase64)
+  var dataBuffer = Buffer.from(posterBase64, 'base64'); // 解码图片
+  fs.writeFile(imgPath + timestamp + ".jpg", dataBuffer, function (err) {
+    if (err) {
+      // res.send(err);
+      console.log(err);
+    } else {
+      // res.send("保存成功！");
+      console.log(timestamp + '.jpg保存成功！');
+    }
+  });
+  res.json({ "success": true })
+})
 app.post("/getsvg", function (req, res) {
   var Jimp = require('jimp');
   var Geo = require('geometrizejs');

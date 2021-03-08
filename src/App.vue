@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <img id="shareBg" src="/picture/share-bg.png" style="visibility: hidden; width: 1080px; height: 1920px;"/>
-    <!-- <canvas id="sharePicture" style="display: none; width: 1080px; height: 1920px;"/> -->
     <canvas id="drawFrame" style="display: none" />
+    <canvas id="sharePoster" width="1080" height="1920" style="display: none; position:fixed; left:0; top:0; "/>
     <div id="inputTextSvg" width="80%" height="200px"></div>
     <div
       :class="pageIndex == 0 || pageIndex == 5 ? 'bg' + pageIndex : 'bg1234'"
@@ -97,7 +97,7 @@
       :src="'/picture/infobottom' + pageIndex + '@x3.png'"
       alt="info bottom"
     />
-    <!-- <canvas v-show="pageIndex == 5" id="qrcode"></canvas> -->
+    <canvas v-show="pageIndex == 5" id="shareQrcode"></canvas>
     <img v-show="pageIndex == 5" id="qrcode" src="/picture/qrcode.jpg"></img>
     
     <div v-show="pageIndex == 5" class="timestamp">{{ timestamp }}</div>
@@ -142,13 +142,12 @@
       <audio id="keyboard-audio" src="/audio/keyboard.mp3" preload />
       <audio id="shoot-audio" src="/audio/shoot.mp3" preload />
     </div>
-    <canvas id="sharePicture" style="display: none; position:fixed; left:0; top:0; width: 1080px; height: 1920px;"/>
   </div>
 </template>
 
 <script>
 import SimpleKeyboard from "./components/SimpleKeyboard.vue";
-// import QRCode from "qrcode";
+import QRCode from "qrcode";
 import { SVG } from "@svgdotjs/svg.js";
 // eslint-disable-next-line no-unused-vars
 import { WebGLImageFilter } from "./lib/webgl-image-filter";
@@ -431,7 +430,9 @@ export default {
         }, 50 * i);
       }
       setTimeout(() => {
+        this.makeCode()
         this.postImages();
+        this.postPoster();
         this.pageIndex += 1;
         // let paint = document.getElementById("paint");
         // paint.style = "transform: rotateY(180deg) scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
@@ -439,8 +440,6 @@ export default {
           document.getElementsByClassName("back-btn5")[0].style.display =
             "none";
         });
-
-        // this.makeCode();
       }, 50 * collection.length);
       this.xmlDoc = null;
     },
@@ -466,6 +465,9 @@ export default {
         //将canvas的宽高设置为图像的宽高
         canvas.width = img.width;
         canvas.height = img.height;
+        c.clearRect(0, 0, canvas.width, canvas.height)
+        c.translate(862, 0);
+        c.scale(-1, 1); //左右镜像翻转
         // console.log(img.width, img.height);
         //canvas画图片
         if (i !== 0) {
@@ -477,7 +479,9 @@ export default {
             img.height
           );
         }
+        // c.scale(-1,1);
         c.drawImage(img, 0, 0);
+        
         this.screenshots[i] = canvas.toDataURL("image/png");
         // console.log(this.screenshots);
       };
@@ -526,19 +530,32 @@ export default {
         console.log(res);
         this.screenshots = [];
       });
-
+    },
+    postPoster(){
       // 生成分享图
-      let sharePicture = document.getElementById("sharePicture");
-      sharePicture.style.display="block";
-      const ctx = sharePicture.getContext('2d');
+      let sharePoster = document.getElementById("sharePoster");
+      // sharePoster.style.display="block";
+      const ctx = sharePoster.getContext('2d');
       let shareBg = document.getElementById("shareBg");
       let lastFrame = document.getElementById("drawFrame");
-      let qrcode = document.getElementById("qrcode");
+      let qrcode = document.getElementById("shareQrcode");
       // (image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-      ctx.drawImage(shareBg,0,0,1080,1920)
-      // ctx.drawImage(shareBg,0,0,1080,1920,0,0,1080,1920)
-      // ctx.drawImage(lastFrame,0,0,862,1150,0,20,1080,1440)
-      // ctx.drawImage(qrcode,0,0,200,200,700,1520,200,200)
+      // ctx.drawImage(shareBg,0,0,1080,1920)
+      ctx.drawImage(shareBg,0,0,1080,1920,0,0,1080,1920)
+      ctx.drawImage(lastFrame,0,0,862,1150,0,45,1080,1440)
+      ctx.drawImage(qrcode,0,0,148,148,840,1570,200,200)
+      var settings = {
+        url: "http://localhost:3000/poster",
+        method: "POST",
+        timeout: 0,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify({ data: sharePoster.toDataURL("image/png"), timestamp: this.timestamp }),
+      };
+      axios(settings).then((res) => {
+        console.log(res);
+      });
     },
     addRect(draw, collection, i) {
       // console.log(i)
@@ -703,9 +720,9 @@ export default {
       return filteredCanvas.toDataURL("image/png", 1);
     },
     makeCode() {
-      let qrcode = document.getElementById("qrcode");
+      let qrcode = document.getElementById("shareQrcode");
       // console.log(qrcode)
-      let url = "http://xiaohui.ai";
+      let url = "http://43.255.224.101:3004/"+this.timestamp+".mp4";
       QRCode.toCanvas(qrcode, url, function (error) {
         if (error) console.error(error);
         // console.log('success!');
@@ -1029,6 +1046,14 @@ export default {
 #qrcode {
   position: fixed;
   /* display: inline; */
+  left: 40.74%;
+  bottom: 4.7%;
+  width: 200px !important;
+  height: 200px !important;
+}
+#shareQrcode {
+  /* display: none; */
+  position: fixed;
   left: 40.74%;
   bottom: 4.7%;
   width: 200px !important;
