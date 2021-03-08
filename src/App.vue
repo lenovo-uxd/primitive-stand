@@ -255,9 +255,9 @@ export default {
           // 显示键盘，输入文字
 
           // location.replace("tabkey:");
-          this.$nextTick(() => {
-            document.getElementById("input").focus();
-          });
+          // this.$nextTick(() => {
+          //   document.getElementById("input").focus();
+          // });
 
           break;
         }
@@ -402,6 +402,8 @@ export default {
       }, 1000);
     },
     drawSvg() {
+      // 每画一次的时间间隔。单位：毫秒
+      let ms = 18;
       // 如果数据还没获取到，每0.5s尝试一次
       if (this.xmlDoc == null) {
         setTimeout(() => {
@@ -422,12 +424,12 @@ export default {
         setTimeout(() => {
           if (i % 4 == 0) {
             // console.log(i);
-            this.addFrame(i / 4);
+            this.addFrame(i / 8);
           }
           document.getElementsByClassName("show1234")[0].style.opacity =
             i / collection.length;
           this.addRect(draw, collection, i);
-        }, 50 * i);
+        }, ms * i);
       }
       setTimeout(() => {
         this.makeCode()
@@ -440,7 +442,7 @@ export default {
           document.getElementsByClassName("back-btn5")[0].style.display =
             "none";
         });
-      }, 50 * collection.length);
+      }, ms * collection.length);
       this.xmlDoc = null;
     },
     addFrame(i) {
