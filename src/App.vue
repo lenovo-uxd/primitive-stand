@@ -432,8 +432,8 @@ export default {
         }, ms * i);
       }
       setTimeout(() => {
-        this.makeCode()
         this.postImages();
+        this.makeCode()
         this.postPoster();
         this.pageIndex += 1;
         // let paint = document.getElementById("paint");
