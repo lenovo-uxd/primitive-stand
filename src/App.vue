@@ -7,13 +7,16 @@
     <div
       :class="pageIndex == 0 || pageIndex == 5 ? 'bg' + pageIndex : 'bg1234'"
     ></div>
-    <div
+    <!-- <div
       :class="
         pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
       "
-    >
-      <canvas id="canvas" width="1080px" height="1920px" />
-    </div>
+    > -->
+      <canvas :class="
+        pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
+      " id="canvas" width="1080px" height="1920px" />
+      <img id="canvasCopy" src=""/>
+    <!-- </div> -->
 
     <video
       :class="
@@ -43,7 +46,7 @@
       v-show="pageIndex >= 4"
       :style="
         pageIndex == 5
-          ? 'transform: scale(0.8) rotateY(180deg); transform-origin: 50% 35%;'
+          ? 'transform: scale(0.8); transform-origin: 50% 35%;'
           : ''
       "
     ></div>
@@ -129,10 +132,52 @@
       src="/picture/back-normal@x3.png"
       alt="button"
     />
-    <img
+    <!-- <img
       :class="pageIndex == 0 || pageIndex == 5 ? 'btn' + pageIndex : 'btn1234'"
       @click="next"
       :src="'/picture/btn' + pageIndex + '@x3.png'"
+      alt="button"
+    /> -->
+    <img
+      class="btn0"
+      @click="next"
+      src="/picture/btn0@x3.png"
+      v-show="pageIndex == 0"
+      alt="button"
+    />
+    <img
+      class="btn1234"
+      @click="next"
+      src="/picture/btn1@x3.png"
+      v-show="false"
+      alt="button"
+    />
+    <img
+      class="btn1234"
+      @click="next"
+      src="/picture/btn2@x3.png"
+      v-show="pageIndex == 2"
+      alt="button"
+    />
+    <img
+      class="btn1234"
+      @click="next"
+      src="/picture/btn3@x3.png"
+      v-show="pageIndex == 3"
+      alt="button"
+    />
+    <img
+      class="btn1234"
+      @click="next"
+      src="/picture/btn4@x3.png"
+      v-show="pageIndex == 4"
+      alt="button"
+    />
+    <img
+      class="btn5"
+      @click="next"
+      src="/picture/btn5@x3.png"
+      v-show="pageIndex == 5"
       alt="button"
     />
     <img class="loading" src="/picture/loading.gif" v-show="isLoading && pageIndex == 4" />
@@ -186,7 +231,7 @@ export default {
     };
   },
   methods: {
-    firstPageAni(e){
+    firstPageAni(e) {
       let btn = e.target;
       setTimeout(() => {
         btn.src = "/picture/btn01@x3.png";
@@ -194,7 +239,7 @@ export default {
 
       setTimeout(() => {
         btn.src = "/picture/btn00@x3.png";
-        this.next(e)
+        this.next(e);
       }, 200);
     },
     next(e) {
@@ -218,7 +263,7 @@ export default {
             // `this` 绑定到当前实例
             document.getElementsByClassName("show0")[0].style.opacity = 0;
             document.getElementsByClassName("btn00")[0].style.opacity = 1;
-            document.getElementsByClassName("btn0")[0].style.display = "none";
+            // document.getElementsByClassName("btn0")[0].style.display = "none";
             document.getElementsByClassName("back-btn0")[0].style.display =
               "none";
           });
@@ -240,12 +285,15 @@ export default {
           break;
         }
         case 2: {
+          // console.log(document.getElementsByClassName("btn1234"))
           let btn = e.target;
           setTimeout(() => {
             btn.src = "/picture/btn1-pressed@x3.png";
           }, 50);
 
           setTimeout(() => {
+            document.getElementsByClassName("btn1234")[0].style.display =
+              "none";
             btn.src = "/picture/btn2@x3.png";
           }, 200);
           this.takePhoto();
@@ -269,12 +317,11 @@ export default {
           setTimeout(() => {
             btn.src = "/picture/btn4@x3.png";
           }, 200);
-          if(this.xmlDoc == null){
+          if (this.xmlDoc == null) {
             this.isLoading = true;
           }
           this.drawSvg();
-          
-          
+
           break;
         }
         case 5: {
@@ -282,7 +329,7 @@ export default {
           // paint.style = "transform: scale(0.8); transform-origin: 50% 80%;";
           // // 绘制二维码并显示
           // this.makeCode();
-          
+
           break;
         }
       }
@@ -422,18 +469,17 @@ export default {
       }
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
-          if (i % 4 == 0) {
+          if (i % 8 == 0) {
             // console.log(i);
-            this.addFrame(i / 8);
+            this.addFrame(i / 8, i/collection.length);
           }
-          document.getElementsByClassName("show1234")[0].style.opacity =
-            i / collection.length;
+          document.getElementsByClassName("show1234")[0].style.opacity = i / collection.length;
           this.addRect(draw, collection, i);
         }, ms * i);
       }
       setTimeout(() => {
         this.postImages();
-        this.makeCode()
+        this.makeCode();
         this.postPoster();
         this.pageIndex += 1;
         // let paint = document.getElementById("paint");
@@ -445,7 +491,7 @@ export default {
       }, ms * collection.length);
       this.xmlDoc = null;
     },
-    addFrame(i) {
+    addFrame(i, alpha) {
       // var svg = document.getElementById("draw").innerHTML;
       var svg = document.getElementById("draw").outerHTML;
       var canvas = document.getElementById("drawFrame");
@@ -467,32 +513,55 @@ export default {
         //将canvas的宽高设置为图像的宽高
         canvas.width = img.width;
         canvas.height = img.height;
-        c.clearRect(0, 0, canvas.width, canvas.height)
-        c.translate(862, 0);
-        c.scale(-1, 1); //左右镜像翻转
+        c.clearRect(0, 0, canvas.width, canvas.height);
+        // c.translate(862, 0);
+        // c.scale(-1, 1); //左右镜像翻转
         // console.log(img.width, img.height);
         //canvas画图片
-        if (i !== 0) {
+        if (i != 0) {
+          // console.log(document.getElementById("canvas"))
+          c.globalAlpha = alpha;
           c.drawImage(
-            document.getElementById("canvas"),
+            document.getElementById("canvasCopy"),
             0,
             0,
-            img.width,
-            img.height
+            canvas.width,
+            canvas.height
           );
+          c.globalAlpha = 1;
         }
         // c.scale(-1,1);
+        // c.drawImage()
         c.drawImage(img, 0, 0);
-        
+
         this.screenshots[i] = canvas.toDataURL("image/png");
         // console.log(this.screenshots);
       };
       img.onerror = () => {
+        //将canvas的宽高设置为图像的宽高
         canvas.width = img.width;
         canvas.height = img.height;
+        c.clearRect(0, 0, canvas.width, canvas.height);
+        c.translate(862, 0);
+        c.scale(-1, 1); //左右镜像翻转
         // console.log(img.width, img.height);
         //canvas画图片
-        c.drawImage(img, 0, 0, 689, 920);
+        if (i != 0) {
+          // console.log(document.getElementById("canvas"))
+          c.globalAlpha = alpha;
+          c.drawImage(
+            document.getElementById("canvasCopy"),
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+          c.globalAlpha = 1;
+        }
+        // c.scale(-1,1);
+        // c.drawImage()
+        c.drawImage(img, 0, 0);
+
         this.screenshots[i] = canvas.toDataURL("image/png");
         // console.log(this.screenshots);
       };
@@ -533,19 +602,19 @@ export default {
         this.screenshots = [];
       });
     },
-    postPoster(){
+    postPoster() {
       // 生成分享图
       let sharePoster = document.getElementById("sharePoster");
       // sharePoster.style.display="block";
-      const ctx = sharePoster.getContext('2d');
+      const ctx = sharePoster.getContext("2d");
       let shareBg = document.getElementById("shareBg");
       let lastFrame = document.getElementById("drawFrame");
       let qrcode = document.getElementById("shareQrcode");
       // (image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
       // ctx.drawImage(shareBg,0,0,1080,1920)
-      ctx.drawImage(shareBg,0,0,1080,1920,0,0,1080,1920)
-      ctx.drawImage(lastFrame,0,0,862,1150,0,45,1080,1440)
-      ctx.drawImage(qrcode,0,0,148,148,840,1570,200,200)
+      ctx.drawImage(shareBg, 0, 0, 1080, 1920, 0, 0, 1080, 1920);
+      ctx.drawImage(lastFrame, 0, 0, 862, 1150, 0, 45, 1080, 1440);
+      ctx.drawImage(qrcode, 0, 0, 148, 148, 840, 1570, 200, 200);
       var settings = {
         url: "http://localhost:3000/poster",
         method: "POST",
@@ -553,7 +622,10 @@ export default {
         headers: {
           "Content-Type": "application/json",
         },
-        data: JSON.stringify({ data: sharePoster.toDataURL("image/png"), timestamp: this.timestamp }),
+        data: JSON.stringify({
+          data: sharePoster.toDataURL("image/png"),
+          timestamp: this.timestamp,
+        }),
       };
       axios(settings).then((res) => {
         console.log(res);
@@ -701,6 +773,8 @@ export default {
       canvas.width = targetWidth;
       canvas.height = targetHeight;
       context.clearRect(0, 0, targetWidth, targetHeight);
+      context.translate(targetWidth, 0);
+      context.scale(-1, 1); //左右镜像翻转
       //将img绘制到画布
       context.drawImage(this.videoObj, 0, 0, targetWidth, targetHeight);
 
@@ -719,12 +793,13 @@ export default {
       filter.addFilter("saturation", -0.3);
       filter.apply(canvas);
 
+      document.getElementById("canvasCopy").src=filteredCanvas.toDataURL("image/png", 1)
       return filteredCanvas.toDataURL("image/png", 1);
     },
     makeCode() {
       let qrcode = document.getElementById("shareQrcode");
       // console.log(qrcode)
-      let url = "http://43.255.224.101:3004/"+this.timestamp+".mp4";
+      let url = "http://xiaohui.ai/other-upload/" + this.timestamp + ".mp4";
       QRCode.toCanvas(qrcode, url, function (error) {
         if (error) console.error(error);
         // console.log('success!');
@@ -797,92 +872,95 @@ export default {
         // this.isLoading = false;
       });
     },
-    getFaceLocation() {
-      let rect = this.videoObj.getBoundingClientRect();
-      let vid_width = rect.width;
-      let vid_height = rect.height;
-      // 压缩图片
-      // 最大尺寸限制
-      const maxWidth = this.maxHeight;
-      const maxHeight = this.maxHeight;
-      // 需要压缩的目标尺寸
-      let targetWidth = vid_width,
-        targetHeight = vid_height;
-      // 等比例计算超过最大限制时缩放后的图片尺寸
-      if (vid_width > maxWidth || vid_height > maxHeight) {
-        if (vid_width / vid_height > 1) {
-          // 宽图片
-          targetWidth = maxWidth;
-          targetHeight = Math.round(maxWidth * (vid_height / vid_width));
-        } else {
-          // 高图片
-          targetHeight = maxHeight;
-          targetWidth = Math.round(maxHeight * (vid_width / vid_height));
-        }
-      }
-      // 创建画布
-      let canvas = document.createElement("canvas");
-      let context = canvas.getContext("2d");
-      // canvas.setAttribute("id","face-location")
-      // document.getElementById("app").appendChild(canvas)
-      // 设置宽高度为等同于要压缩图片的尺寸
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
-      context.clearRect(0, 0, targetWidth, targetHeight);
-      //将img绘制到画布
-      context.drawImage(
-        document.getElementById("canvas"),
-        0,
-        0,
-        targetWidth,
-        targetHeight
-      );
+    // getFaceLocation() {
+    //   let rect = this.videoObj.getBoundingClientRect();
+    //   let vid_width = rect.width;
+    //   let vid_height = rect.height;
+    //   // 压缩图片
+    //   // 最大尺寸限制
+    //   const maxWidth = this.maxHeight;
+    //   const maxHeight = this.maxHeight;
+    //   // 需要压缩的目标尺寸
+    //   let targetWidth = vid_width,
+    //     targetHeight = vid_height;
+    //   // 等比例计算超过最大限制时缩放后的图片尺寸
+    //   if (vid_width > maxWidth || vid_height > maxHeight) {
+    //     if (vid_width / vid_height > 1) {
+    //       // 宽图片
+    //       targetWidth = maxWidth;
+    //       targetHeight = Math.round(maxWidth * (vid_height / vid_width));
+    //     } else {
+    //       // 高图片
+    //       targetHeight = maxHeight;
+    //       targetWidth = Math.round(maxHeight * (vid_width / vid_height));
+    //     }
+    //   }
+    //   // 创建画布
+    //   let canvas = document.createElement("canvas");
+    //   let context = canvas.getContext("2d");
+    //   // canvas.setAttribute("id","face-location")
+    //   // document.getElementById("app").appendChild(canvas)
+    //   // 设置宽高度为等同于要压缩图片的尺寸
+    //   canvas.width = targetWidth;
+    //   canvas.height = targetHeight;
+    //   context.clearRect(0, 0, targetWidth, targetHeight);
+    //   //将img绘制到画布
+    //   context.drawImage(
+    //     document.getElementById("canvas"),
+    //     0,
+    //     0,
+    //     targetWidth,
+    //     targetHeight
+    //   );
 
-      var tracker = new window.tracking.ObjectTracker("face");
-      // const tracker = new window.tracking.ObjectTracker("face");
-      // tracker.setStepSize(1.7);
-      // console.log(img)
-      window.tracking.track(canvas, tracker);
-      console.log(window.tracking);
-      tracker.on("track", function (event) {
-        console.log(event);
-        event.data.forEach(function (rect) {
-          console.log(rect);
-          // window.plot(rect.x, rect.y, rect.width, rect.height);
-        });
-      });
-    },
-    getCompetence() {
-      let flag = true;
-      const _this = this;
-      const canvas = document.getElementById("canvas");
-      const context = canvas.getContext("2d");
+    //   var tracker = new window.tracking.ObjectTracker("face");
+    //   // const tracker = new window.tracking.ObjectTracker("face");
+    //   // tracker.setStepSize(1.7);
+    //   // console.log(img)
+    //   window.tracking.track(canvas, tracker);
+    //   console.log(window.tracking);
+    //   tracker.on("track", function (event) {
+    //     console.log(event);
+    //     event.data.forEach(function (rect) {
+    //       console.log(rect);
+    //       // window.plot(rect.x, rect.y, rect.width, rect.height);
+    //     });
+    //   });
+    // },
+    // getCompetence() {
+    //   let flag = true;
+    //   const _this = this;
+    //   const canvas = document.getElementById("canvas");
+    //   const context = canvas.getContext("2d");
 
-      const tracker = new window.tracking.ObjectTracker("face");
-      tracker.setInitialScale(4);
-      tracker.setStepSize(2);
-      tracker.setEdgesDensity(0.1);
-      // 启动摄像头初始化
-      this.trackerTask = window.tracking.track("#canvas", tracker);
-      tracker.on("track", function (event) {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        event.data.forEach(function (rect) {
-          context.strokeStyle = "#ff0000";
-          context.strokeRect(rect.x, rect.y, rect.width, rect.height);
-        });
-      });
-    },
+    //   const tracker = new window.tracking.ObjectTracker("face");
+    //   tracker.setInitialScale(4);
+    //   tracker.setStepSize(2);
+    //   tracker.setEdgesDensity(0.1);
+    //   // 启动摄像头初始化
+    //   this.trackerTask = window.tracking.track("#canvas", tracker);
+    //   tracker.on("track", function (event) {
+    //     context.clearRect(0, 0, canvas.width, canvas.height);
+    //     event.data.forEach(function (rect) {
+    //       context.strokeStyle = "#ff0000";
+    //       context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+    //     });
+    //   });
+    // },
     onChange(input) {
       this.input = input.toUpperCase();
       document.getElementById("keyboard-audio").play();
       this.setText();
     },
-    onKeyPress(button) {
-      console.log("button", button);
-    },
+    // onKeyPress(button) {
+    //   console.log("button", button);
+    // },
     onInputChange(input) {
       // this.input = input.target.value.toUpperCase();
-      this.input = input.target.value.replace(/[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF][\u200D|\uFE0F]|[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF]|[0-9|*|#]\uFE0F\u20E3|[0-9|#]\u20E3|[\u203C-\u3299]\uFE0F\u200D|[\u203C-\u3299]\uFE0F|[\u2122-\u2B55]|\u303D|[\A9|\AE]\u3030|\uA9|\uAE|\u3030/ig, '');
+      this.input = input.target.value.replace(
+        /[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF][\u200D|\uFE0F]|[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF]|[0-9|*|#]\uFE0F\u20E3|[0-9|#]\u20E3|[\u203C-\u3299]\uFE0F\u200D|[\u203C-\u3299]\uFE0F|[\u2122-\u2B55]|\u303D|[\A9|\AE]\u3030|\uA9|\uAE|\u3030/gi,
+        ""
+      );
       this.setText();
     },
   },
@@ -983,7 +1061,7 @@ export default {
   width: 862px;
   height: 1150px;
   opacity: 0;
-  transform: rotateY(180deg);
+  /* transform: rotateY(180deg); */
 }
 .show1234 {
   position: fixed;
@@ -992,7 +1070,7 @@ export default {
   width: 862px;
   height: 1150px;
   opacity: 0;
-  transform: rotateY(180deg);
+  /* transform: rotateY(180deg); */
 }
 .show5 {
   transition: all 1s;
@@ -1002,7 +1080,7 @@ export default {
   width: 862px;
   height: 1150px;
   opacity: 1;
-  transform: scale(0.8) rotateY(180deg);
+  transform: scale(0.8);
   transform-origin: 50% 35%;
 }
 .bg0 {
@@ -1031,10 +1109,10 @@ export default {
   top: 17%;
   background: black;
 }
-#canvas {
+/* #canvas {
   width: 862px;
   height: 1150px;
-}
+} */
 #overlay {
   position: fixed;
   width: 862px;
@@ -1068,7 +1146,7 @@ export default {
   height: 59.896%;
   left: 10.09%;
   top: 10%;
-  transform: rotateY(180deg);
+  /* transform: rotateY(180deg); */
 }
 
 body {
@@ -1141,7 +1219,7 @@ body {
   width: 77%;
   left: 11.5%;
   bottom: 32%;
-      /* border: beige 2px solid; */
+  /* border: beige 2px solid; */
 }
 input {
   text-align: left;
@@ -1208,7 +1286,7 @@ input {
   position: fixed;
   bottom: 13.5%;
   left: 27.6%;
-  display: none;
+  /* display: none; */
 }
 .btn5 {
   transition: all 1s;
@@ -1280,10 +1358,9 @@ input {
   width: 200px;
   font-size: 30px;
 }
-.finish-btn{
+.finish-btn {
   position: fixed;
   height: 200px;
   right: 12%;
-
 }
 </style>

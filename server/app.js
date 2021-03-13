@@ -15,7 +15,7 @@ function postVideo(path) {
   var localFile = fs.createReadStream(path);
 
   var formData = new FormData();
-  formData.append('myfile', localFile);
+  formData.append('file', localFile);
 
   var headers = formData.getHeaders();//获取headers
   //获取form-data长度
