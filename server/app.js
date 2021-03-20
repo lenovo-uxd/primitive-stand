@@ -161,7 +161,15 @@ app.post("/poster", function (req, res) {
 app.post("/getsvg", function (req, res) {
   var Jimp = require('jimp');
   var Geo = require('geometrizejs');
+  const shapeMap = {
+    // 'rect': [Geo.ShapeTypes.RECTANGLE],
+    'rect': [Geo.ShapeTypes.ROTATED_RECTANGLE],
+    'tri': [Geo.ShapeTypes.TRIANGLE],
+    // 'circle': [Geo.ShapeTypes.CIRCLE],
+    'circle': [Geo.ShapeTypes.ROTATED_ELLIPSE],
+  };
   (async () => {
+    // console.log(shapeMap[req.body.shape])
     var startTime = new Date()
     // load png/jpeg/gif,bmp/tiff image from url, file path or Buffer using jimp:
     var imageBuffer = Buffer.from(req.body.data.split(',')[1], 'base64');
@@ -170,7 +178,7 @@ app.post("/getsvg", function (req, res) {
       image.bitmap.height, image.bitmap.data)
     const runner = new Geo.ImageRunner(bitmap)
     const options = {
-      shapeTypes: [Geo.ShapeTypes.RECTANGLE],
+      shapeTypes: shapeMap[req.body.shape],
       candidateShapesPerStep: 1,
       shapeMutationsPerStep: 58,
       alpha: 128

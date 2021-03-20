@@ -73,7 +73,7 @@
       :src="'/picture/count' + count + '@x3.png'"
     />
     <div id="overlay"></div>
-    <div class="input-container" v-show="pageIndex == 3">
+    <!-- <div class="input-container" v-show="pageIndex == 3">
       <input
         id="input"
         :value="input"
@@ -85,11 +85,12 @@
         autocomplete="off"
       />
       <img src="/picture/finishbtn.png" class="finish-btn" v-show="isInputting"/>
-      <!-- <SimpleKeyboard
-        @onChange="onChange"
-        @onKeyPress="onKeyPress"
-        :input="input"
-      /> -->
+    </div> -->
+    <div class="shape-container" v-show="pageIndex == 3">
+      <div class="text">请选择：</div>
+      <div class="shapes">
+      <img v-for="item in shapeList" :key="item" :src="'/picture/'+item+'.png'" :class="item == shape?'checked-shape':'shape'" @click="setShape"/>
+      </div>
     </div>
     <img
       :class="
@@ -228,6 +229,8 @@ export default {
       screenshots: [],
       isLoading: false,
       timestamp: "",
+      shape: "rect",
+      shapeList: ["circle", "rect", "tri"],
     };
   },
   methods: {
@@ -310,6 +313,8 @@ export default {
           break;
         }
         case 4: {
+          let base64 = this.drawPhoto();
+          this.getSvg(base64);
           let btn = e.target;
           setTimeout(() => {
             btn.src = "/picture/btn3-pressed@x3.png";
@@ -439,15 +444,59 @@ export default {
           // 停止播放视频流并获取当前画面的base64
           this.videoObj.pause();
           // eslint-disable-next-line no-unused-vars
-          let base64 = this.drawPhoto();
+          // let base64 = this.drawPhoto();
           // this.getFaceLocation();
           // console.log(base64)
           // 调用api，并绘制svg
-          this.getSvg(base64);
+          // this.getSvg(base64);
           this.next();
         }
       }, 1000);
     },
+    // drawSvg() {
+    //   // 每画一次的时间间隔。单位：毫秒
+    //   let ms = 18;
+    //   // 如果数据还没获取到，每0.5s尝试一次
+    //   if (this.xmlDoc == null) {
+    //     setTimeout(() => {
+    //       this.drawSvg();
+    //     }, 500);
+    //     return;
+    //   }
+    //   this.isLoading = false;
+    //   let collection = this.xmlDoc.getElementsByTagName("rect");
+    //   let draw = SVG().addTo("#paint").size("100%", "100%");
+    //   draw.attr("id", "draw");
+    //   document.getElementById("videoel").style.opacity = 0;
+    //   if (this.textObj == null || this.input == "") {
+    //     this.input = "LENOVO";
+    //     this.setText();
+    //   }
+    //   for (let i = 0; i < collection.length; i++) {
+    //     setTimeout(() => {
+    //       if (i % 8 == 0) {
+    //         // console.log(i);
+    //         this.addFrame(i / 8, i / collection.length);
+    //       }
+    //       document.getElementsByClassName("show1234")[0].style.opacity =
+    //         i / collection.length;
+    //       this.addRect(draw, collection, i);
+    //     }, ms * i);
+    //   }
+    //   setTimeout(() => {
+    //     this.postImages();
+    //     this.makeCode();
+    //     this.postPoster();
+    //     this.pageIndex += 1;
+    //     // let paint = document.getElementById("paint");
+    //     // paint.style = "transform: rotateY(180deg) scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
+    //     this.$nextTick(() => {
+    //       document.getElementsByClassName("back-btn5")[0].style.display =
+    //         "none";
+    //     });
+    //   }, ms * collection.length);
+    //   this.xmlDoc = null;
+    // },
     drawSvg() {
       // 每画一次的时间间隔。单位：毫秒
       let ms = 18;
@@ -459,22 +508,41 @@ export default {
         return;
       }
       this.isLoading = false;
-      let collection = this.xmlDoc.getElementsByTagName("rect");
+      console.log(this.xmlDoc)
+      let addShape = null;
+      let collection = []
+      switch(this.shape){
+        case 'rect':{
+          // collection = this.xmlDoc.getElementsByTagName("rect");
+          collection = this.xmlDoc.getElementsByTagName("polygon");
+          addShape = this.addRotatedRect
+          break;
+        }
+        case 'circle':{
+          // collection = this.xmlDoc.getElementsByTagName("circle");
+          collection = this.xmlDoc.getElementsByTagName("g");
+          // console.log(collection)
+          addShape = this.addRotatedEllipse
+          break;
+        }
+        case 'tri':{
+          collection = this.xmlDoc.getElementsByTagName("polygon");
+          addShape = this.addTri
+          break;
+        }
+      }
       let draw = SVG().addTo("#paint").size("100%", "100%");
       draw.attr("id", "draw");
       document.getElementById("videoel").style.opacity = 0;
-      if (this.textObj == null || this.input == "") {
-        this.input = "LENOVO";
-        this.setText();
-      }
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
           if (i % 8 == 0) {
             // console.log(i);
-            this.addFrame(i / 8, i/collection.length);
+            this.addFrame(i / 8, i / collection.length);
           }
-          document.getElementsByClassName("show1234")[0].style.opacity = i / collection.length;
-          this.addRect(draw, collection, i);
+          document.getElementsByClassName("show1234")[0].style.opacity =
+            i / collection.length;
+          addShape(draw, collection, i);
         }, ms * i);
       }
       setTimeout(() => {
@@ -631,6 +699,45 @@ export default {
         console.log(res);
       });
     },
+    mulRatio(str, ratio){
+      let translateX = 0;
+      let translateY = 0;
+      let rotate = 0;
+      let scaleX = 0;
+      let scaleY = 0;
+      let i = 10;
+      while(str[i] != ' '){
+        translateX += str[i]
+        i++;
+      }
+      i++;
+      while(str[i] != ')'){
+        translateY += str[i];
+        i++;
+      }
+      i+=9;
+      while(str[i] != ')'){
+        rotate += str[i];
+        i++;
+      }
+      i += 8;
+      while(str[i] != ' '){
+        scaleX += str[i]
+        i++;
+      }
+      i++;
+      while(str[i] != ')'){
+        scaleY += str[i];
+        i++;
+      }
+
+      translateX = parseInt(translateX) * ratio
+      translateY = parseInt(translateY) * ratio
+      // rotate = parseInt(rotate) * ratio
+      scaleX = parseInt(scaleX) * ratio
+      scaleY = parseInt(scaleY) * ratio
+      return 'translate('+translateX+' '+translateY+') rotate('+rotate+') scale('+scaleX+' '+scaleY+')'
+    },
     addRect(draw, collection, i) {
       // console.log(i)
       let x = parseFloat(collection[i].attributes.x.value);
@@ -638,36 +745,12 @@ export default {
       let width = parseFloat(collection[i].attributes.width.value);
       let height = parseFloat(collection[i].attributes.height.value);
       let fill = collection[i].attributes.fill.value;
-      // eslint-disable-next-line no-unused-vars
-      let fill_opacity = collection[i].attributes["fill-opacity"].value;
-      // eslint-disable-next-line no-unused-vars
-      let length = collection.length;
-
-      // let ratio1_h = width / 878;
-      // let ratio2_h = height / 146;
-
-      // let ratio1_v = width / 121;
-      // let ratio2_v = height / 722;
-
-      // y -= this.textHeight*0.09;
-
-      let ratio1_h = width / this.textWidth;
-      let ratio2_h = height / this.textHeight;
-      // let ratio2_h = height / (this.textHeight*0.82);
-
-      // let ratio1_v = width / (this.textHeight*0.82);
-      let ratio1_v = width / this.textHeight;
-      let ratio2_v = height / this.textWidth;
 
       let ratio = 1150 / this.maxHeight;
       x *= ratio;
       y *= ratio;
       width *= ratio;
       height *= ratio;
-      ratio1_h *= ratio;
-      ratio1_v *= ratio;
-      ratio2_h *= ratio;
-      ratio2_v *= ratio;
 
       let rect = draw.rect({
         width: width,
@@ -678,50 +761,108 @@ export default {
       rect.attr("id", "rect" + i);
       rect.attr("fill-rule", "nonzero");
 
-      let group = draw.group();
-      group.attr("id", "rect" + i);
-      group.attr("fill-rule", "nonzero");
-
       rect.attr("fill", fill);
-      rect.attr("fill-opacity", 0.1);
+      rect.attr("fill-opacity", 0.5);
 
-      group.attr("fill", fill);
-      group.attr("fill-opacity", 0.4 + i / length / 5);
-
-      let text = this.textObj.text();
-      group.plain(text);
-      group.attr("font-size", "100px");
-      group.attr("font-weight", "bold");
-      group.attr("font-family", "fantasy");
-      if (width > height) {
-        // 水平
-        group.attr(
-          "transform",
-          "translate(" +
-            x +
-            "," +
-            (y + height * 0.82) +
-            ") scale(" +
-            ratio1_h +
-            "," +
-            ratio2_h +
-            ")"
-        );
-      } else {
-        // 垂直
-        group.attr(
-          "transform",
-          "translate(" +
-            x +
-            "," +
-            y +
-            ") scale(" +
-            ratio1_v +
-            "," +
-            ratio2_v +
-            ") rotate(90)"
-        );
+    },
+    addRotatedRect(draw, collection, i) {
+      let ratio = 1150 / this.maxHeight;
+      let pointsStr='';
+      let points = collection[i].attributes.points.value.split(' ');
+      for(let point in points){
+        pointsStr += ratio*parseFloat(points[point])
+        pointsStr += ' '
       }
+      
+      let fill = collection[i].attributes.fill.value;
+
+      let polygon = draw.polygon(pointsStr);
+      polygon.attr("id", "rect" + i);
+      polygon.attr("fill-rule", "nonzero");
+
+      polygon.attr("fill", fill);
+      polygon.attr("fill-opacity", 0.5);
+
+    },
+    addCircle(draw, collection, i) {
+      // console.log(i)
+      let cx = parseFloat(collection[i].attributes.cx.value);
+      let cy = parseFloat(collection[i].attributes.cy.value);
+      let r = parseFloat(collection[i].attributes.r.value);
+      let fill = collection[i].attributes.fill.value;
+
+      let ratio = 1150 / this.maxHeight;
+      cx *= ratio;
+      cy *= ratio;
+      r *= ratio;
+
+      let circle = draw.circle({
+        cx: cx,
+        cy: cy,
+        r: r,
+      });
+      circle.attr("id", "circle" + i);
+      circle.attr("fill-rule", "nonzero");
+
+      circle.attr("fill", fill);
+      circle.attr("fill-opacity", 0.5);
+
+    },
+    addRotatedEllipse(draw, collection, i) {
+      // console.log(i)
+      let cx = 0;
+      let cy = 0;
+      let rx = 1;
+      let ry = 1;
+      let fill = collection[i].firstChild.attributes.fill.value;
+      let transform = collection[i].attributes.transform.value;
+
+      let ratio = 1150 / this.maxHeight;
+      // cx *= ratio;
+      // cy *= ratio;
+      // rx *= ratio;
+      // ry *= ratio;
+
+      transform = this.mulRatio(transform, ratio)
+
+      let g = draw.group()
+      g.attr("transform",transform)
+      // console.log(g)
+      let re = g.ellipse({
+        cx: cx,
+        cy: cy,
+        rx: rx,
+        ry: ry,
+      });
+      re.attr("id", "r_ellipse" + i);
+      re.attr("fill-rule", "nonzero");
+
+      re.attr("fill", fill);
+      re.attr("fill-opacity", 0.5);
+
+    },
+    addTri(draw, collection, i) {
+      // console.log(i)
+      let ratio = 1150 / this.maxHeight;
+      let pointsStr='';
+      let points = collection[i].attributes.points.value.split(' ');
+      for(let point in points){
+        let p = points[point].split(',')
+        pointsStr += ratio*parseFloat(p[0])
+        pointsStr += ','
+        pointsStr += ratio*parseFloat(p[1])
+        pointsStr += ' '
+      }
+      
+      let fill = collection[i].attributes.fill.value;
+
+      let polygon = draw.polygon(pointsStr);
+      polygon.attr("id", "rect" + i);
+      polygon.attr("fill-rule", "nonzero");
+
+      polygon.attr("fill", fill);
+      polygon.attr("fill-opacity", 0.5);
+
     },
     setVideoSrc() {
       // 想要获取一个最接近 1280x720 的相机分辨率
@@ -793,7 +934,10 @@ export default {
       filter.addFilter("saturation", -0.3);
       filter.apply(canvas);
 
-      document.getElementById("canvasCopy").src=filteredCanvas.toDataURL("image/png", 1)
+      document.getElementById("canvasCopy").src = filteredCanvas.toDataURL(
+        "image/png",
+        1
+      );
       return filteredCanvas.toDataURL("image/png", 1);
     },
     makeCode() {
@@ -861,13 +1005,13 @@ export default {
         headers: {
           "Content-Type": "application/json",
         },
-        data: JSON.stringify({ data: base64 }),
+        data: JSON.stringify({ data: base64, shape: _this.shape }),
         cancelToken: new CancelToken(function executor(c) {
           _this.cancelAjax = c;
         }),
       };
       axios(settings).then((res) => {
-        // console.log(res);
+        console.log(res);
         this.xmlDoc = this.xmlParse(res.data.data);
         // this.isLoading = false;
       });
@@ -962,6 +1106,12 @@ export default {
         ""
       );
       this.setText();
+    },
+    setShape(e) {
+      // console.log(e.target.src);
+      let arr = e.target.src.split("/");
+      let src = arr[arr.length - 1].split(".")[0];
+      this.shape = src;
     },
   },
   mounted: function () {
@@ -1233,7 +1383,35 @@ input {
   color: white;
   opacity: 0.7;
 }
-
+.shape-container {
+  text-align: left;
+  position: fixed;
+  width: 77%;
+  left: 11.5%;
+  bottom: 32%;
+  background: black;
+}
+.shape-container .text {
+  font-size: 28px;
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 40px;
+  margin-top: 30px;
+  margin-left: 30px;
+}
+.shape-container .shapes {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30px;
+}
+.shape-container .shapes .shape {
+  width: 16%;
+  opacity: 0.15;
+}
+.shape-container .shapes .checked-shape {
+  width: 16%;
+}
 .simple-keyboard {
   font-size: 32px;
   max-width: 100%;
