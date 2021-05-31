@@ -68,7 +68,7 @@
     />
     <div id="overlay"></div>
     <!-- 文字输入 start -->
-    <div class="input-container" v-show="pageIndex == 3">
+    <div class="input-container" v-show="mode == 'text' && pageIndex == 3">
       <input
         id="input"
         :value="input"
@@ -84,12 +84,12 @@
     <!-- 文字输入 end -->
 
     <!-- 图形输入 start -->
-    <!-- <div class="shape-container" v-show="pageIndex == 3">
+    <div class="shape-container" v-show="mode == 'shape' && pageIndex == 3">
       <div class="text">请选择：</div>
       <div class="shapes">
       <img v-for="item in shapeList" :key="item" :src="'/picture/'+item+'.png'" :class="item == shape?'checked-shape':'shape'" @click="setShape"/>
       </div>
-    </div> -->
+    </div>
     <!-- 图形输入 end -->
     <img
       :class="
@@ -195,7 +195,7 @@ export default {
   },
   data() {
     return {
-      mode: 'text',// ['text',shape]
+      mode: 'shape',// ['text',shape]
       pageIndex: 0,
       isInputting: false,
       // 包含text的svg对象
