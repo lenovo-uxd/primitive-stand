@@ -196,6 +196,7 @@ export default {
   data() {
     return {
       mode: 'shape',// ['text',shape]
+      isVideoNeeded: false,
       pageIndex: 0,
       isInputting: false,
       // 包含text的svg对象
@@ -495,8 +496,11 @@ export default {
           addZero(now.getHours().toString()) +
           addZero(now.getMinutes().toString()) +
           addZero(now.getSeconds().toString());
-        // 调用接口传回帧
-        // this.postImages();
+        // 是否需要生成视频
+        if(this.isVideoNeeded){
+          // 调用接口传回帧
+          this.postImages();
+        }
         // 绘制二维码
         this.makeCode();
         // 调用接口传回海报
