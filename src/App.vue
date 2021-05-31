@@ -1,22 +1,16 @@
 <template>
   <div id="app">
-    <img id="shareBg" src="/picture/share-bg.png" style="visibility: hidden; width: 1080px; height: 1920px;"/>
+    <img id="shareBg" src="/picture/share-bg2.png" style="visibility: hidden; width: 1080px; height: 1920px;"/>
     <canvas id="drawFrame" style="display: none" />
     <canvas id="sharePoster" width="1080" height="1920" style="display: none; position:fixed; left:0; top:0; "/>
     <div id="inputTextSvg" width="80%" height="200px"></div>
     <div
       :class="pageIndex == 0 || pageIndex == 5 ? 'bg' + pageIndex : 'bg1234'"
     ></div>
-    <!-- <div
-      :class="
-        pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
-      "
-    > -->
       <canvas :class="
         pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
       " id="canvas" width="1080px" height="1920px" />
       <img id="canvasCopy" src=""/>
-    <!-- </div> -->
 
     <video
       :class="
@@ -73,7 +67,8 @@
       :src="'/picture/count' + count + '@x3.png'"
     />
     <div id="overlay"></div>
-    <!-- <div class="input-container" v-show="pageIndex == 3">
+    <!-- 文字输入 start -->
+    <div class="input-container" v-show="pageIndex == 3">
       <input
         id="input"
         :value="input"
@@ -85,13 +80,17 @@
         autocomplete="off"
       />
       <img src="/picture/finishbtn.png" class="finish-btn" v-show="isInputting"/>
-    </div> -->
-    <div class="shape-container" v-show="pageIndex == 3">
+    </div>
+    <!-- 文字输入 end -->
+
+    <!-- 图形输入 start -->
+    <!-- <div class="shape-container" v-show="pageIndex == 3">
       <div class="text">请选择：</div>
       <div class="shapes">
       <img v-for="item in shapeList" :key="item" :src="'/picture/'+item+'.png'" :class="item == shape?'checked-shape':'shape'" @click="setShape"/>
       </div>
-    </div>
+    </div> -->
+    <!-- 图形输入 end -->
     <img
       :class="
         pageIndex == 0 || pageIndex == 5
@@ -105,15 +104,6 @@
     <img v-show="pageIndex == 5" id="qrcode" src="/picture/qrcode.jpg"></img>
     
     <div v-show="pageIndex == 5" class="timestamp">{{ timestamp }}</div>
-    <!-- <img
-      :class="
-        pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'
-      "
-      @click="next"
-      :src="'/picture/btn0' + pageIndex + '@x3.png'"
-      alt="button"
-      v-show="pageIndex != 3"
-    /> -->
     <img
       :class="
         pageIndex == 0 || pageIndex == 5 ? 'btn0' + pageIndex : 'btn01234'
@@ -133,12 +123,6 @@
       src="/picture/back-normal@x3.png"
       alt="button"
     />
-    <!-- <img
-      :class="pageIndex == 0 || pageIndex == 5 ? 'btn' + pageIndex : 'btn1234'"
-      @click="next"
-      :src="'/picture/btn' + pageIndex + '@x3.png'"
-      alt="button"
-    /> -->
     <img
       class="btn0"
       @click="next"
@@ -150,7 +134,7 @@
       class="btn1234"
       @click="next"
       src="/picture/btn1@x3.png"
-      v-show="false"
+      v-show="isBtn1Show"
       alt="button"
     />
     <img
@@ -211,6 +195,7 @@ export default {
   },
   data() {
     return {
+      mode: 'text',// ['text',shape]
       pageIndex: 0,
       isInputting: false,
       // 包含text的svg对象
@@ -231,47 +216,50 @@ export default {
       timestamp: "",
       shape: "rect",
       shapeList: ["circle", "rect", "tri"],
+      isBtn1Show:false,
     };
   },
   methods: {
+    // 第0页切换到第1页的动画
     firstPageAni(e) {
       let btn = e.target;
+      // 先让btn00切换为第1页的按钮图片
       setTimeout(() => {
         btn.src = "/picture/btn01@x3.png";
       }, 50);
 
+      // btn01把btn00盖上后再把图片换回来
       setTimeout(() => {
         btn.src = "/picture/btn00@x3.png";
         this.next(e);
       }, 200);
     },
+    // 下一页
     next(e) {
+      // 绘制中不能进入下一页，绘制完成后自动跳转到下一页
       if (this.pageIndex == 4) {
         return;
       }
+      // 播放音效
       document.getElementById("button-audio").play();
+      
       this.pageIndex += 1;
+      
+      // 循环回第0页
       if (this.pageIndex >= 6) {
-        // document.getElementById("draw").remove();
-        // document.getElementById("videoel").style.display="block";
-        // location.reload();
         this.pageIndex -= 6;
       }
+      // 进入页面之后的处理逻辑
       switch (this.pageIndex) {
         case 0: {
           document.getElementById("paint").innerHTML = "";
           document.getElementById("videoel").style.opacity = 0;
           this.$nextTick(function () {
-            // DOM 现在更新了
-            // `this` 绑定到当前实例
             document.getElementsByClassName("show0")[0].style.opacity = 0;
             document.getElementsByClassName("btn00")[0].style.opacity = 1;
-            // document.getElementsByClassName("btn0")[0].style.display = "none";
             document.getElementsByClassName("back-btn0")[0].style.display =
               "none";
           });
-          // console.log(document.getElementsByClassName("show")[0])
-
           this.input = "";
           break;
         }
@@ -279,8 +267,7 @@ export default {
           document.getElementById("videoel").play();
           document.getElementById("videoel").style.opacity = 1;
           setTimeout(() => {
-            document.getElementsByClassName("btn1234")[0].style.display =
-              "block";
+            this.isBtn1Show=true;
             document.getElementsByClassName("back-btn1234")[0].style.display =
               "block";
             document.getElementsByClassName("btn01234")[0].style.opacity = 0;
@@ -288,23 +275,22 @@ export default {
           break;
         }
         case 2: {
-          // console.log(document.getElementsByClassName("btn1234"))
           let btn = e.target;
           setTimeout(() => {
             btn.src = "/picture/btn1-pressed@x3.png";
           }, 50);
 
           setTimeout(() => {
-            document.getElementsByClassName("btn1234")[0].style.display =
-              "none";
             btn.src = "/picture/btn2@x3.png";
+            this.isBtn1Show=false;
           }, 200);
+          
           this.takePhoto();
           break;
         }
         case 3: {
           // 显示键盘，输入文字
-
+          // 通过提前设置好的注册表项唤醒系统键盘
           // location.replace("tabkey:");
           // this.$nextTick(() => {
           //   document.getElementById("input").focus();
@@ -313,8 +299,16 @@ export default {
           break;
         }
         case 4: {
-          let base64 = this.drawPhoto();
-          this.getSvg(base64);
+          // 模式为shape时，需要选择图形之后才能获取svg编码
+          if(this.mode == 'shape'){
+            // 获取摄像头捕捉到的图像的base64
+            let base64 = this.drawPhoto();
+
+            // 调用接口获取svg编码
+            this.getSvg(base64);
+          }
+          
+          // 按钮按下动效
           let btn = e.target;
           setTimeout(() => {
             btn.src = "/picture/btn3-pressed@x3.png";
@@ -322,26 +316,28 @@ export default {
           setTimeout(() => {
             btn.src = "/picture/btn4@x3.png";
           }, 200);
+
+          // 检查接口是否已返回值，未返回则显示加载动图
           if (this.xmlDoc == null) {
             this.isLoading = true;
           }
+
+          // 绘制svg
           this.drawSvg();
 
           break;
         }
         case 5: {
-          // let paint = document.getElementById("paint");
-          // paint.style = "transform: scale(0.8); transform-origin: 50% 80%;";
-          // // 绘制二维码并显示
+          // 绘制二维码并显示
           // this.makeCode();
-
           break;
         }
       }
-      // document.getElementsByClassName("machine")[0].style="transform: scale(1.22)"
     },
+    // 上一页
     back(e) {
       let btn = e.target;
+      // 按钮按下动效以及音效
       setTimeout(() => {
         btn.src = "/picture/back-pressed@x3.png";
       }, 50);
@@ -349,21 +345,25 @@ export default {
         btn.src = "/picture/back-normal@x3.png";
       }, 200);
       document.getElementById("button-audio").play();
-      if (this.pageIndex == 4) {
+
+      // 拍照中和绘制中不允许返回
+      if (this.pageIndex == 2 || this.pageIndex == 4) {
         return;
       }
       this.pageIndex -= 1;
+      if(this.pageIndex == 2){
+        this.pageIndex -= 1;
+      }
+      // 进入页面之后的处理逻辑
       switch (this.pageIndex) {
         case 0: {
           document.getElementById("paint").innerHTML = "";
           document.getElementById("videoel").style.opacity = 0;
-          document.getElementsByClassName("btn1234")[0].style.display = "none";
+          this.isBtn1Show=false;
           document.getElementsByClassName("back-btn1234")[0].style.display =
             "none";
           document.getElementsByClassName("btn01234")[0].style.opacity = 1;
           this.$nextTick(function () {
-            // DOM 现在更新了
-            // `this` 绑定到当前实例
             document.getElementsByClassName("show0")[0].style.opacity = 0;
             document.getElementsByClassName("btn00")[0].style.opacity = 1;
           });
@@ -372,28 +372,20 @@ export default {
         }
         case 1: {
           this.input = "";
+          this.isBtn1Show=true;
           document.getElementById("videoel").play();
           document.getElementById("videoel").style.opacity = 1;
-          if (typeof this.cancelAjax === `function`) {
-            this.cancelAjax();
-            this.cancelAjax = null;
-          }
+          // 从第2页返回则取消获取svg编码的请求
+          // if (typeof this.cancelAjax === `function`) {
+          //   this.cancelAjax();
+          //   this.cancelAjax = null;
+          // }
           if (this.xmlDoc != null) {
             this.xmlDoc = null;
           }
           break;
         }
         case 2: {
-          this.pageIndex -= 1;
-          this.input = "";
-          document.getElementById("videoel").play();
-          if (typeof this.cancelAjax === `function`) {
-            this.cancelAjax();
-            this.cancelAjax = null;
-          }
-          if (this.xmlDoc != null) {
-            this.xmlDoc = null;
-          }
           break;
         }
         case 3: {
@@ -402,25 +394,8 @@ export default {
         }
       }
     },
-    setText() {
-      // console.log(e)
-      // this.input = document
-      //   .getElementsByTagName("input")[0]
-      //   .value.toUpperCase();
-      if (this.textObj == null) {
-        this.textObj = this.textSvgObj.text(this.input);
-      } else {
-        this.textObj.clear();
-        this.textObj.text(this.input);
-      }
-
-      let rect = this.textObj.node.getBoundingClientRect();
-      this.textWidth = rect.width;
-      this.textHeight = rect.height;
-      // this.textHeight = 100
-    },
+    // 拍照
     takePhoto() {
-      // this.drawPhoto()
       // 显示倒计时
       this.count = 3;
       document.getElementById("count-audio").play();
@@ -443,60 +418,19 @@ export default {
 
           // 停止播放视频流并获取当前画面的base64
           this.videoObj.pause();
-          // eslint-disable-next-line no-unused-vars
-          // let base64 = this.drawPhoto();
-          // this.getFaceLocation();
-          // console.log(base64)
-          // 调用api，并绘制svg
-          // this.getSvg(base64);
+
+          // 模式为text时，拍照之后即可获取svg，减少等待时间
+          if(this.mode == 'text'){
+            // 获取摄像头捕捉到的图像的base64
+            let base64 = this.drawPhoto();
+            // 调用接口获取svg编码
+            this.getSvg(base64);
+          }
           this.next();
         }
       }, 1000);
     },
-    // drawSvg() {
-    //   // 每画一次的时间间隔。单位：毫秒
-    //   let ms = 18;
-    //   // 如果数据还没获取到，每0.5s尝试一次
-    //   if (this.xmlDoc == null) {
-    //     setTimeout(() => {
-    //       this.drawSvg();
-    //     }, 500);
-    //     return;
-    //   }
-    //   this.isLoading = false;
-    //   let collection = this.xmlDoc.getElementsByTagName("rect");
-    //   let draw = SVG().addTo("#paint").size("100%", "100%");
-    //   draw.attr("id", "draw");
-    //   document.getElementById("videoel").style.opacity = 0;
-    //   if (this.textObj == null || this.input == "") {
-    //     this.input = "LENOVO";
-    //     this.setText();
-    //   }
-    //   for (let i = 0; i < collection.length; i++) {
-    //     setTimeout(() => {
-    //       if (i % 8 == 0) {
-    //         // console.log(i);
-    //         this.addFrame(i / 8, i / collection.length);
-    //       }
-    //       document.getElementsByClassName("show1234")[0].style.opacity =
-    //         i / collection.length;
-    //       this.addRect(draw, collection, i);
-    //     }, ms * i);
-    //   }
-    //   setTimeout(() => {
-    //     this.postImages();
-    //     this.makeCode();
-    //     this.postPoster();
-    //     this.pageIndex += 1;
-    //     // let paint = document.getElementById("paint");
-    //     // paint.style = "transform: rotateY(180deg) scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
-    //     this.$nextTick(() => {
-    //       document.getElementsByClassName("back-btn5")[0].style.display =
-    //         "none";
-    //     });
-    //   }, ms * collection.length);
-    //   this.xmlDoc = null;
-    // },
+    // 绘制svg
     drawSvg() {
       // 每画一次的时间间隔。单位：毫秒
       let ms = 18;
@@ -512,8 +446,12 @@ export default {
       let addShape = null;
       let collection = []
       switch(this.shape){
+        case 'textRect':{
+          collection = this.xmlDoc.getElementsByTagName("rect");
+          addShape = this.addTextRect
+          break;
+        }
         case 'rect':{
-          // collection = this.xmlDoc.getElementsByTagName("rect");
           collection = this.xmlDoc.getElementsByTagName("polygon");
           addShape = this.addRotatedRect
           break;
@@ -521,7 +459,6 @@ export default {
         case 'circle':{
           // collection = this.xmlDoc.getElementsByTagName("circle");
           collection = this.xmlDoc.getElementsByTagName("g");
-          // console.log(collection)
           addShape = this.addRotatedEllipse
           break;
         }
@@ -536,22 +473,35 @@ export default {
       document.getElementById("videoel").style.opacity = 0;
       for (let i = 0; i < collection.length; i++) {
         setTimeout(() => {
+          // 每绘制8次取一帧，这些帧会传回后端生成视频
           if (i % 8 == 0) {
-            // console.log(i);
             this.addFrame(i / 8, i / collection.length);
           }
+          // 背景透明度逐渐增加
           document.getElementsByClassName("show1234")[0].style.opacity =
             i / collection.length;
+          // 在svg中加入一个图形
           addShape(draw, collection, i);
         }, ms * i);
       }
+      // 绘制结束后，把获取到的帧穿回后端生成视频
       setTimeout(() => {
-        this.postImages();
+        // 按时间生成编号
+        let now = new Date();
+        let addZero = (str) => {
+          return str.length == 2 ? str : "0" + str;
+        };
+        this.timestamp =
+          addZero(now.getHours().toString()) +
+          addZero(now.getMinutes().toString()) +
+          addZero(now.getSeconds().toString());
+        // 调用接口传回帧
+        // this.postImages();
+        // 绘制二维码
         this.makeCode();
+        // 调用接口传回海报
         this.postPoster();
         this.pageIndex += 1;
-        // let paint = document.getElementById("paint");
-        // paint.style = "transform: rotateY(180deg) scale(0.8); transform-origin: 50% 80%;"; // 绘制二维码并显示
         this.$nextTick(() => {
           document.getElementsByClassName("back-btn5")[0].style.display =
             "none";
@@ -559,6 +509,7 @@ export default {
       }, ms * collection.length);
       this.xmlDoc = null;
     },
+    // 保存绘制的帧
     addFrame(i, alpha) {
       // var svg = document.getElementById("draw").innerHTML;
       var svg = document.getElementById("draw").outerHTML;
@@ -643,19 +594,10 @@ export default {
       // console.log(img.src)
       // img.src = 'data:image/svg+xml;base64,' + window.btoa(svg);//svg内容中不能有中文字符
     },
+    // 调用接口传回帧
     postImages() {
-      // 按时间生成编号
-      let now = new Date();
-      let addZero = (str) => {
-        return str.length == 2 ? str : "0" + str;
-      };
-      this.timestamp =
-        addZero(now.getHours().toString()) +
-        addZero(now.getMinutes().toString()) +
-        addZero(now.getSeconds().toString());
       // 传送截图给后端
       var images = this.screenshots;
-      // console.log(images);
       var settings = {
         url: "http://localhost:3000/make-video",
         method: "POST",
@@ -670,19 +612,18 @@ export default {
         this.screenshots = [];
       });
     },
+    // 调用接口传回海报
     postPoster() {
-      // 生成分享图
+      // 生成海报
       let sharePoster = document.getElementById("sharePoster");
-      // sharePoster.style.display="block";
       const ctx = sharePoster.getContext("2d");
       let shareBg = document.getElementById("shareBg");
       let lastFrame = document.getElementById("drawFrame");
+      // 根据需求，有时shareBg自带二维码，有时需要自己绘制
       let qrcode = document.getElementById("shareQrcode");
-      // (image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-      // ctx.drawImage(shareBg,0,0,1080,1920)
       ctx.drawImage(shareBg, 0, 0, 1080, 1920, 0, 0, 1080, 1920);
       ctx.drawImage(lastFrame, 0, 0, 862, 1150, 0, 45, 1080, 1440);
-      ctx.drawImage(qrcode, 0, 0, 148, 148, 840, 1570, 200, 200);
+      // ctx.drawImage(qrcode, 0, 0, 148, 148, 840, 1570, 200, 200);
       var settings = {
         url: "http://localhost:3000/poster",
         method: "POST",
@@ -738,6 +679,90 @@ export default {
       scaleY = parseInt(scaleY) * ratio
       return 'translate('+translateX+' '+translateY+') rotate('+rotate+') scale('+scaleX+' '+scaleY+')'
     },
+    // 添加文字
+    addTextRect(draw, collection, i) {
+      // console.log(i)
+      let x = parseFloat(collection[i].attributes.x.value);
+      let y = parseFloat(collection[i].attributes.y.value);
+      let width = parseFloat(collection[i].attributes.width.value);
+      let height = parseFloat(collection[i].attributes.height.value);
+      let fill = collection[i].attributes.fill.value;
+      // eslint-disable-next-line no-unused-vars
+      let fill_opacity = collection[i].attributes["fill-opacity"].value;
+      // eslint-disable-next-line no-unused-vars
+      let length = collection.length;
+
+      let ratio1_h = width / this.textWidth;
+      let ratio2_h = height / this.textHeight;
+
+      let ratio1_v = width / this.textHeight;
+      let ratio2_v = height / this.textWidth;
+
+      let ratio = 1150 / this.maxHeight;
+      x *= ratio;
+      y *= ratio;
+      width *= ratio;
+      height *= ratio;
+      ratio1_h *= ratio;
+      ratio1_v *= ratio;
+      ratio2_h *= ratio;
+      ratio2_v *= ratio;
+
+      let rect = draw.rect({
+        width: width,
+        height: height,
+        x: x,
+        y: y,
+      });
+      rect.attr("id", "rect" + i);
+      rect.attr("fill-rule", "nonzero");
+
+      let group = draw.group();
+      group.attr("id", "rect" + i);
+      group.attr("fill-rule", "nonzero");
+
+      rect.attr("fill", fill);
+      rect.attr("fill-opacity", 0.1);
+
+      group.attr("fill", fill);
+      group.attr("fill-opacity", 0.4 + i / length / 5);
+
+      let text = this.textObj.text();
+      group.plain(text);
+      group.attr("font-size", "100px");
+      group.attr("font-weight", "bold");
+      group.attr("font-family", "fantasy");
+      if (width > height) {
+        // 水平
+        group.attr(
+          "transform",
+          "translate(" +
+            x +
+            "," +
+            (y + height * 0.82) +
+            ") scale(" +
+            ratio1_h +
+            "," +
+            ratio2_h +
+            ")"
+        );
+      } else {
+        // 垂直
+        group.attr(
+          "transform",
+          "translate(" +
+            x +
+            "," +
+            y +
+            ") scale(" +
+            ratio1_v +
+            "," +
+            ratio2_v +
+            ") rotate(90)"
+        );
+      }
+    },
+    // 添加矩形
     addRect(draw, collection, i) {
       // console.log(i)
       let x = parseFloat(collection[i].attributes.x.value);
@@ -765,6 +790,7 @@ export default {
       rect.attr("fill-opacity", 0.5);
 
     },
+    // 添加旋转矩形
     addRotatedRect(draw, collection, i) {
       let ratio = 1150 / this.maxHeight;
       let pointsStr='';
@@ -784,6 +810,7 @@ export default {
       polygon.attr("fill-opacity", 0.5);
 
     },
+    // 添加圆形
     addCircle(draw, collection, i) {
       // console.log(i)
       let cx = parseFloat(collection[i].attributes.cx.value);
@@ -808,6 +835,7 @@ export default {
       circle.attr("fill-opacity", 0.5);
 
     },
+    // 添加旋转椭圆
     addRotatedEllipse(draw, collection, i) {
       // console.log(i)
       let cx = 0;
@@ -841,6 +869,7 @@ export default {
       re.attr("fill-opacity", 0.5);
 
     },
+    // 添加三角形
     addTri(draw, collection, i) {
       // console.log(i)
       let ratio = 1150 / this.maxHeight;
@@ -864,6 +893,7 @@ export default {
       polygon.attr("fill-opacity", 0.5);
 
     },
+    // 设置video元素视频源为本地相机
     setVideoSrc() {
       // 想要获取一个最接近 1280x720 的相机分辨率
       var constraints = { audio: false, video: { width: 810, height: 1080 } };
@@ -882,6 +912,7 @@ export default {
           console.log(err.name + ": " + err.message);
         }); // 总是在最后检查错误
     },
+    // 绘制video元素内容作为照片，绘制在canvas上，并返回base64
     drawPhoto() {
       let rect = this.videoObj.getBoundingClientRect();
       let vid_width = rect.width;
@@ -940,15 +971,15 @@ export default {
       );
       return filteredCanvas.toDataURL("image/png", 1);
     },
+    // 绘制二维码
     makeCode() {
       let qrcode = document.getElementById("shareQrcode");
-      // console.log(qrcode)
       let url = "http://xiaohui.ai/other-upload/" + this.timestamp + ".mp4";
       QRCode.toCanvas(qrcode, url, function (error) {
         if (error) console.error(error);
-        // console.log('success!');
       });
     },
+    // 解析获取到的svg编码
     xmlParse(text) {
       let xmlDoc = null;
       let parser = null;
@@ -969,33 +1000,8 @@ export default {
       }
       // console.log(xmlDoc);
       return xmlDoc;
-      // let errorMessage = xmlDoc.getElementsByTagName("ErrorMessage")[0]
-      //   .textContent;
-      // let printVersion = xmlDoc.getElementsByTagName("PrintVersion")[0]
-      //   .textContent;
-
-      // let objDate = {};
-      // objDate.errorInfo = errorMessage;
-      // objDate.versionInfo = printVersion;
-      // console.log(objDate);
-      // return objDate;
     },
-    previewFile() {
-      var preview = document.querySelector("img");
-      var file = document.querySelector("input[type=file]").files[0];
-      var reader = new FileReader();
-
-      reader.onloadend = function () {
-        preview.src = reader.result;
-        // console.log(preview.src);
-      };
-
-      if (file) {
-        reader.readAsDataURL(file);
-      } else {
-        preview.src = "";
-      }
-    },
+    // 调用接口获取svg编码
     getSvg(base64) {
       let _this = this;
       var settings = {
@@ -1016,97 +1022,27 @@ export default {
         // this.isLoading = false;
       });
     },
-    // getFaceLocation() {
-    //   let rect = this.videoObj.getBoundingClientRect();
-    //   let vid_width = rect.width;
-    //   let vid_height = rect.height;
-    //   // 压缩图片
-    //   // 最大尺寸限制
-    //   const maxWidth = this.maxHeight;
-    //   const maxHeight = this.maxHeight;
-    //   // 需要压缩的目标尺寸
-    //   let targetWidth = vid_width,
-    //     targetHeight = vid_height;
-    //   // 等比例计算超过最大限制时缩放后的图片尺寸
-    //   if (vid_width > maxWidth || vid_height > maxHeight) {
-    //     if (vid_width / vid_height > 1) {
-    //       // 宽图片
-    //       targetWidth = maxWidth;
-    //       targetHeight = Math.round(maxWidth * (vid_height / vid_width));
-    //     } else {
-    //       // 高图片
-    //       targetHeight = maxHeight;
-    //       targetWidth = Math.round(maxHeight * (vid_width / vid_height));
-    //     }
-    //   }
-    //   // 创建画布
-    //   let canvas = document.createElement("canvas");
-    //   let context = canvas.getContext("2d");
-    //   // canvas.setAttribute("id","face-location")
-    //   // document.getElementById("app").appendChild(canvas)
-    //   // 设置宽高度为等同于要压缩图片的尺寸
-    //   canvas.width = targetWidth;
-    //   canvas.height = targetHeight;
-    //   context.clearRect(0, 0, targetWidth, targetHeight);
-    //   //将img绘制到画布
-    //   context.drawImage(
-    //     document.getElementById("canvas"),
-    //     0,
-    //     0,
-    //     targetWidth,
-    //     targetHeight
-    //   );
-
-    //   var tracker = new window.tracking.ObjectTracker("face");
-    //   // const tracker = new window.tracking.ObjectTracker("face");
-    //   // tracker.setStepSize(1.7);
-    //   // console.log(img)
-    //   window.tracking.track(canvas, tracker);
-    //   console.log(window.tracking);
-    //   tracker.on("track", function (event) {
-    //     console.log(event);
-    //     event.data.forEach(function (rect) {
-    //       console.log(rect);
-    //       // window.plot(rect.x, rect.y, rect.width, rect.height);
-    //     });
-    //   });
-    // },
-    // getCompetence() {
-    //   let flag = true;
-    //   const _this = this;
-    //   const canvas = document.getElementById("canvas");
-    //   const context = canvas.getContext("2d");
-
-    //   const tracker = new window.tracking.ObjectTracker("face");
-    //   tracker.setInitialScale(4);
-    //   tracker.setStepSize(2);
-    //   tracker.setEdgesDensity(0.1);
-    //   // 启动摄像头初始化
-    //   this.trackerTask = window.tracking.track("#canvas", tracker);
-    //   tracker.on("track", function (event) {
-    //     context.clearRect(0, 0, canvas.width, canvas.height);
-    //     event.data.forEach(function (rect) {
-    //       context.strokeStyle = "#ff0000";
-    //       context.strokeRect(rect.x, rect.y, rect.width, rect.height);
-    //     });
-    //   });
-    // },
-    onChange(input) {
-      this.input = input.toUpperCase();
-      document.getElementById("keyboard-audio").play();
-      this.setText();
-    },
-    // onKeyPress(button) {
-    //   console.log("button", button);
-    // },
+    // input更新时更新对应的data元素和svg
     onInputChange(input) {
       // this.input = input.target.value.toUpperCase();
       this.input = input.target.value.replace(
         /[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF][\u200D|\uFE0F]|[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF]|[0-9|*|#]\uFE0F\u20E3|[0-9|#]\u20E3|[\u203C-\u3299]\uFE0F\u200D|[\u203C-\u3299]\uFE0F|[\u2122-\u2B55]|\u303D|[\A9|\AE]\u3030|\uA9|\uAE|\u3030/gi,
         ""
       );
-      this.setText();
+
+      // 设置textSvg
+      if (this.textObj == null) {
+        this.textObj = this.textSvgObj.text(this.input);
+      } else {
+        this.textObj.clear();
+        this.textObj.text(this.input);
+      }
+
+      let rect = this.textObj.node.getBoundingClientRect();
+      this.textWidth = rect.width;
+      this.textHeight = rect.height;
     },
+    // 设置图形
     setShape(e) {
       // console.log(e.target.src);
       let arr = e.target.src.split("/");
@@ -1115,16 +1051,21 @@ export default {
     },
   },
   mounted: function () {
-    // let ratio = this.getRatio()
-    // console.log(ratio)
+    // 初始化
     this.videoObj = document.getElementById("videoel");
     this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
     this.setVideoSrc();
+    if(this.mode == 'text'){
+      this.shape = 'textRect';
+    }
   },
 };
 </script>
 
 <style>
+body{
+  overflow: hidden;
+}
 #app {
   /* font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -1144,7 +1085,9 @@ export default {
   width: 100%;
   position: absolute; */
 }
-
+#canvasCopy{
+  display: none;
+}
 #inputTextSvg {
   position: fixed;
   bottom: 20%;
@@ -1513,11 +1456,13 @@ input {
 }
 .bottom-info5 {
   transition: all 1s;
-  width: 19.23%;
+  /* width: 19.23%; */
+  width: 37.53%;
   /* height: 134px; */
   position: fixed;
   bottom: 1.5%;
-  left: 40.385%;
+  left: 31.235%;
+  /* left: 40.385%; */
 }
 .loading {
   position: fixed;

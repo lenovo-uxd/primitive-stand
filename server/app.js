@@ -162,7 +162,7 @@ app.post("/getsvg", function (req, res) {
   var Jimp = require('jimp');
   var Geo = require('geometrizejs');
   const shapeMap = {
-    // 'rect': [Geo.ShapeTypes.RECTANGLE],
+    'textRect': [Geo.ShapeTypes.RECTANGLE],
     'rect': [Geo.ShapeTypes.ROTATED_RECTANGLE],
     'tri': [Geo.ShapeTypes.TRIANGLE],
     // 'circle': [Geo.ShapeTypes.CIRCLE],
@@ -180,9 +180,10 @@ app.post("/getsvg", function (req, res) {
     const options = {
       shapeTypes: shapeMap[req.body.shape],
       candidateShapesPerStep: 1,
-      shapeMutationsPerStep: 58,
+      shapeMutationsPerStep: 40,
       alpha: 128
     }
+    // console.log(req.body.shape)
     const iterations = 800
     const svgData = []
     for (var i = 0; i < iterations; i++) {
