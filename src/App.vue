@@ -195,7 +195,7 @@ export default {
   },
   data() {
     return {
-      mode: 'shape',// ['text',shape]
+      mode: 'text',// ['text',shape]
       isVideoNeeded: false,
       pageIndex: 0,
       isInputting: false,
