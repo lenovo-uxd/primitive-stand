@@ -158,9 +158,9 @@ app.post("/poster", function (req, res) {
   });
   res.json({ "success": true })
 })
-app.post("/getsvg", function (req, res) {
-  var Jimp = require('jimp');
-  var Geo = require('geometrizejs');
+app.post("/getsvg", async function (req, res) {
+  const Jimp = require('jimp');
+  const Geo = require('geometrizejs');
   const shapeMap = {
     'textRect': [Geo.ShapeTypes.RECTANGLE],
     'rect': [Geo.ShapeTypes.ROTATED_RECTANGLE],
@@ -168,41 +168,42 @@ app.post("/getsvg", function (req, res) {
     // 'circle': [Geo.ShapeTypes.CIRCLE],
     'circle': [Geo.ShapeTypes.ROTATED_ELLIPSE],
   };
-  (async () => {
-    // console.log(shapeMap[req.body.shape])
-    var startTime = new Date()
-    // load png/jpeg/gif,bmp/tiff image from url, file path or Buffer using jimp:
-    var imageBuffer = Buffer.from(req.body.data.split(',')[1], 'base64');
-    const image = await Jimp.read(imageBuffer)
-    const bitmap = Geo.Bitmap.createFromByteArray(image.bitmap.width,
-      image.bitmap.height, image.bitmap.data)
-    const runner = new Geo.ImageRunner(bitmap)
-    const options = {
-      shapeTypes: shapeMap[req.body.shape],
-      candidateShapesPerStep: 1,
-      shapeMutationsPerStep: 40,
-      alpha: 128
-    }
-    // console.log(req.body.shape)
-    const iterations = 800
-    const svgData = []
-    for (var i = 0; i < iterations; i++) {
-      //console.log(Geo.SvgExporter.exportShapes(runner.step(options)))
-      svgData.push(Geo.SvgExporter.exportShapes(runner.step(options)))
-    }
-    const svg = Geo.SvgExporter.getSvgPrelude() +
-      Geo.SvgExporter.getSvgNodeOpen(bitmap.width, bitmap.height) +
-      svgData.join('\n') +
-      Geo.SvgExporter.getSvgNodeClose()
 
-    // in node.js:
-    var result = {}
+  // console.log(shapeMap[req.body.shape])
+  const startTime = new Date()
+  
+  // load png/jpeg/gif,bmp/tiff image from url, file path or Buffer using jimp:
+  const imageBuffer = Buffer.from(req.body.data.split(',')[1], 'base64');
+  const image = await Jimp.read(imageBuffer)
+  const bitmap = Geo.Bitmap.createFromByteArray(image.bitmap.width,
+    image.bitmap.height, image.bitmap.data)
+  const runner = new Geo.ImageRunner(bitmap)
+  const options = {
+    shapeTypes: shapeMap[req.body.shape],
+    candidateShapesPerStep: 1,
+    shapeMutationsPerStep: 40,
+    alpha: 128
+  }
+  // console.log(req.body.shape)
+  const iterations = 800
+  const svgData = []
+  for (let i = 0; i < iterations; i++) {
+    //console.log(Geo.SvgExporter.exportShapes(runner.step(options)))
+    svgData.push(Geo.SvgExporter.exportShapes(runner.step(options)))
+  }
+  const svg = Geo.SvgExporter.getSvgPrelude() +
+    Geo.SvgExporter.getSvgNodeOpen(bitmap.width, bitmap.height) +
+    svgData.join('\n') +
+    Geo.SvgExporter.getSvgNodeClose()
 
-    result.data = svg
-    var endTime = new Date()
-    console.log((endTime - startTime) / 1000 + " seconds")
-    res.json(result)
-  })()
+  // in node.js:
+  const result = {
+    data: svg
+  }
+
+  const endTime = new Date()
+  console.log('/getsvg finished.', (endTime - startTime) / 1000 + " seconds")
+  res.json(result)
 })
 
 app.listen(port, () => {

@@ -1,16 +1,30 @@
 <template>
   <div id="app">
-    <img id="shareBg" src="/picture/share-bg2.png" style="visibility: hidden; width: 1080px; height: 1920px;"/>
+    <img
+      id="shareBg"
+      src="/picture/share-bg2.png"
+      style="visibility: hidden; width: 1080px; height: 1920px"
+    />
     <canvas id="drawFrame" style="display: none" />
-    <canvas id="sharePoster" width="1080" height="1920" style="display: none; position:fixed; left:0; top:0; "/>
+    <canvas
+      id="sharePoster"
+      width="1080"
+      height="1920"
+      style="display: none; position: fixed; left: 0; top: 0"
+    />
     <div id="inputTextSvg" width="80%" height="200px"></div>
     <div
       :class="pageIndex == 0 || pageIndex == 5 ? 'bg' + pageIndex : 'bg1234'"
     ></div>
-      <canvas :class="
+    <canvas
+      :class="
         pageIndex == 0 || pageIndex == 5 ? 'show' + pageIndex : 'show1234'
-      " id="canvas" width="1080px" height="1920px" />
-      <img id="canvasCopy" src=""/>
+      "
+      id="canvas"
+      width="1080px"
+      height="1920px"
+    />
+    <img id="canvasCopy" src="" />
 
     <video
       :class="
@@ -74,12 +88,16 @@
         :value="input"
         class="input"
         @input="onInputChange"
-        @focus="isInputting=true;"
-        @blur="isInputting=false;"
+        @focus="isInputting = true"
+        @blur="isInputting = false"
         placeholder="点击输入名字"
         autocomplete="off"
       />
-      <img src="/picture/finishbtn.png" class="finish-btn" v-show="isInputting"/>
+      <img
+        src="/picture/finishbtn.png"
+        class="finish-btn"
+        v-show="isInputting"
+      />
     </div>
     <!-- 文字输入 end -->
 
@@ -87,7 +105,13 @@
     <div class="shape-container" v-show="mode == 'shape' && pageIndex == 3">
       <div class="text">请选择：</div>
       <div class="shapes">
-      <img v-for="item in shapeList" :key="item" :src="'/picture/'+item+'.png'" :class="item == shape?'checked-shape':'shape'" @click="setShape"/>
+        <img
+          v-for="item in shapeList"
+          :key="item"
+          :src="'/picture/' + item + '.png'"
+          :class="item == shape ? 'checked-shape' : 'shape'"
+          @click="setShape"
+        />
       </div>
     </div>
     <!-- 图形输入 end -->
@@ -101,8 +125,8 @@
       alt="info bottom"
     />
     <canvas v-show="pageIndex == 5" id="shareQrcode"></canvas>
-    <img v-show="pageIndex == 5" id="qrcode" src="/picture/qrcode.jpg"></img>
-    
+    <img v-show="pageIndex == 5" id="qrcode" src="/picture/qrcode.jpg" />
+
     <div v-show="pageIndex == 5" class="timestamp">{{ timestamp }}</div>
     <img
       :class="
@@ -165,7 +189,11 @@
       v-show="pageIndex == 5"
       alt="button"
     />
-    <img class="loading" src="/picture/loading.gif" v-show="isLoading && pageIndex == 4" />
+    <img
+      class="loading"
+      src="/picture/loading.gif"
+      v-show="isLoading && pageIndex == 4"
+    />
     <div v-show="false">
       <audio id="button-audio" src="/audio/button.mp3" preload />
       <audio id="count-audio" src="/audio/count.mp3" preload />
@@ -193,9 +221,21 @@ export default {
   components: {
     SimpleKeyboard,
   },
+  /**
+   * @typedef {object} Data
+   * @property {('text'|'shape')} Data.mode
+   * @property {?XMLDocument} Data.mlDoc
+   * @property {import('@svgdotjs/svg.js').Svg} Data.textSvgObj
+   * @property {import('@svgdotjs/svg.js').Text} Data.textObj
+   * @property {string} Data.input - 用户输入文本，显示在输入框中
+   * @property {string} Data.drawingInput - 用于绘制图片的文本
+   * @property {string} Data.defaultInput - 在drawingInput为空时使用defaultInput作为文本来绘制图片
+   * @property {string} Data.timestamp
+   * @returns {Data}
+   */
   data() {
     return {
-      mode: 'shape',// ['text',shape]
+      mode: "text", // ['text',shape]
       isVideoNeeded: false,
       pageIndex: 0,
       isInputting: false,
@@ -207,6 +247,8 @@ export default {
       textHeight: 0,
       // input的值
       input: "",
+      drawingInput: "",
+      defaultInput: "LENOVO",
       count: 4,
       videoObj: null,
       maxHeight: 500,
@@ -217,7 +259,7 @@ export default {
       timestamp: "",
       shape: "rect",
       shapeList: ["circle", "rect", "tri"],
-      isBtn1Show:false,
+      isBtn1Show: false,
     };
   },
   methods: {
@@ -243,9 +285,9 @@ export default {
       }
       // 播放音效
       document.getElementById("button-audio").play();
-      
+
       this.pageIndex += 1;
-      
+
       // 循环回第0页
       if (this.pageIndex >= 6) {
         this.pageIndex -= 6;
@@ -268,7 +310,7 @@ export default {
           document.getElementById("videoel").play();
           document.getElementById("videoel").style.opacity = 1;
           setTimeout(() => {
-            this.isBtn1Show=true;
+            this.isBtn1Show = true;
             document.getElementsByClassName("back-btn1234")[0].style.display =
               "block";
             document.getElementsByClassName("btn01234")[0].style.opacity = 0;
@@ -283,9 +325,9 @@ export default {
 
           setTimeout(() => {
             btn.src = "/picture/btn2@x3.png";
-            this.isBtn1Show=false;
+            this.isBtn1Show = false;
           }, 200);
-          
+
           this.takePhoto();
           break;
         }
@@ -301,14 +343,14 @@ export default {
         }
         case 4: {
           // 模式为shape时，需要选择图形之后才能获取svg编码
-          if(this.mode == 'shape'){
+          if (this.mode == "shape") {
             // 获取摄像头捕捉到的图像的base64
             let base64 = this.drawPhoto();
 
             // 调用接口获取svg编码
             this.getSvg(base64);
           }
-          
+
           // 按钮按下动效
           let btn = e.target;
           setTimeout(() => {
@@ -352,7 +394,7 @@ export default {
         return;
       }
       this.pageIndex -= 1;
-      if(this.pageIndex == 2){
+      if (this.pageIndex == 2) {
         this.pageIndex -= 1;
       }
       // 进入页面之后的处理逻辑
@@ -360,7 +402,7 @@ export default {
         case 0: {
           document.getElementById("paint").innerHTML = "";
           document.getElementById("videoel").style.opacity = 0;
-          this.isBtn1Show=false;
+          this.isBtn1Show = false;
           document.getElementsByClassName("back-btn1234")[0].style.display =
             "none";
           document.getElementsByClassName("btn01234")[0].style.opacity = 1;
@@ -373,7 +415,7 @@ export default {
         }
         case 1: {
           this.input = "";
-          this.isBtn1Show=true;
+          this.isBtn1Show = true;
           document.getElementById("videoel").play();
           document.getElementById("videoel").style.opacity = 1;
           // 从第2页返回则取消获取svg编码的请求
@@ -421,7 +463,7 @@ export default {
           this.videoObj.pause();
 
           // 模式为text时，拍照之后即可获取svg，减少等待时间
-          if(this.mode == 'text'){
+          if (this.mode == "text") {
             // 获取摄像头捕捉到的图像的base64
             let base64 = this.drawPhoto();
             // 调用接口获取svg编码
@@ -430,6 +472,46 @@ export default {
           this.next();
         }
       }, 1000);
+    },
+
+    /**
+     * @typedef {(SVGRectElement|SVGPolygonElement|SVGGElement)} DrawableSvgElement - SVG {Rect|Polygen|G} Element
+     * @callback AddShapeCallback 用于绘制指定 DrawableSvgElement 元素的回调函数
+     * @param {import('@svgdotjs/svg.js').Svg} draw - SVG元素的封装，用于绘制 SVG 元素
+     * @param {HTMLCollectionOf<DrawableSvgElement>} collection - 待绘制的所有元素的集合
+     * @param {number} i - 当前被绘制元素的下标
+     *
+     * @typedef {object} CollectionAndCallback - 一个包含待绘制的 DrawableSvgElement 的集合以及对应的 addShapeCallback 的对象
+     * @property {Array<DrawableSvgElement>} collection
+     * @property {AddShapeCallback} addShape
+     */
+
+    /**
+     * 根据绘制类型返回指定的 SVG 元素集合以及绘制该类型元素的回调函数
+     * @param {string} type - 一个表示绘制类型的字符串
+     * @returns {CollectionAndCallback}
+     */
+    getCollectionAndCallback(type) {
+      const mapping = {
+        textRect: {
+          collection: this.xmlDoc.getElementsByTagName("rect"),
+          addShape: this.addTextRect,
+        },
+        rect: {
+          collection: this.xmlDoc.getElementsByTagName("polygon"),
+          addShape: this.addRotatedRect,
+        },
+        circle: {
+          collection: this.xmlDoc.getElementsByTagName("g"),
+          addShape: this.addRotatedEllipse,
+        },
+        tri: {
+          collection: this.xmlDoc.getElementsByTagName("polygon"),
+          addShape: this.addTri,
+        },
+      };
+
+      return mapping[type];
     },
     // 绘制svg
     drawSvg() {
@@ -443,61 +525,41 @@ export default {
         return;
       }
       this.isLoading = false;
-      console.log(this.xmlDoc)
-      let addShape = null;
-      let collection = []
-      switch(this.shape){
-        case 'textRect':{
-          collection = this.xmlDoc.getElementsByTagName("rect");
-          addShape = this.addTextRect
-          break;
-        }
-        case 'rect':{
-          collection = this.xmlDoc.getElementsByTagName("polygon");
-          addShape = this.addRotatedRect
-          break;
-        }
-        case 'circle':{
-          // collection = this.xmlDoc.getElementsByTagName("circle");
-          collection = this.xmlDoc.getElementsByTagName("g");
-          addShape = this.addRotatedEllipse
-          break;
-        }
-        case 'tri':{
-          collection = this.xmlDoc.getElementsByTagName("polygon");
-          addShape = this.addTri
-          break;
-        }
-      }
-      let draw = SVG().addTo("#paint").size("100%", "100%");
+      console.log(this.xmlDoc);
+      const { collection, addShape } = this.getCollectionAndCallback(
+        this.shape
+      );
+
+      /** @type {import('@svgdotjs/svg.js').Svg} */
+      const draw = SVG().addTo("#paint").size("100%", "100%");
       draw.attr("id", "draw");
       document.getElementById("videoel").style.opacity = 0;
-      for (let i = 0; i < collection.length; i++) {
+      collection.forEach((el, i) => {
         setTimeout(() => {
           // 每绘制8次取一帧，这些帧会传回后端生成视频
           if (i % 8 == 0) {
             this.addFrame(i / 8, i / collection.length);
           }
           // 背景透明度逐渐增加
-          document.getElementsByClassName("show1234")[0].style.opacity =
+          document.querySelector(".show1234").style.opacity =
             i / collection.length;
           // 在svg中加入一个图形
           addShape(draw, collection, i);
         }, ms * i);
-      }
+      });
+
       // 绘制结束后，把获取到的帧穿回后端生成视频
       setTimeout(() => {
         // 按时间生成编号
         let now = new Date();
-        let addZero = (str) => {
-          return str.length == 2 ? str : "0" + str;
-        };
+        let addZero = (str) => (str.length == 2 ? str : "0" + str);
+
         this.timestamp =
           addZero(now.getHours().toString()) +
           addZero(now.getMinutes().toString()) +
           addZero(now.getSeconds().toString());
         // 是否需要生成视频
-        if(this.isVideoNeeded){
+        if (this.isVideoNeeded) {
           // 调用接口传回帧
           this.postImages();
         }
@@ -644,46 +706,65 @@ export default {
         console.log(res);
       });
     },
-    mulRatio(str, ratio){
+    mulRatio(str, ratio) {
       let translateX = 0;
       let translateY = 0;
       let rotate = 0;
       let scaleX = 0;
       let scaleY = 0;
       let i = 10;
-      while(str[i] != ' '){
-        translateX += str[i]
+      while (str[i] != " ") {
+        translateX += str[i];
         i++;
       }
       i++;
-      while(str[i] != ')'){
+      while (str[i] != ")") {
         translateY += str[i];
         i++;
       }
-      i+=9;
-      while(str[i] != ')'){
+      i += 9;
+      while (str[i] != ")") {
         rotate += str[i];
         i++;
       }
       i += 8;
-      while(str[i] != ' '){
-        scaleX += str[i]
+      while (str[i] != " ") {
+        scaleX += str[i];
         i++;
       }
       i++;
-      while(str[i] != ')'){
+      while (str[i] != ")") {
         scaleY += str[i];
         i++;
       }
 
-      translateX = parseInt(translateX) * ratio
-      translateY = parseInt(translateY) * ratio
+      translateX = parseInt(translateX) * ratio;
+      translateY = parseInt(translateY) * ratio;
       // rotate = parseInt(rotate) * ratio
-      scaleX = parseInt(scaleX) * ratio
-      scaleY = parseInt(scaleY) * ratio
-      return 'translate('+translateX+' '+translateY+') rotate('+rotate+') scale('+scaleX+' '+scaleY+')'
+      scaleX = parseInt(scaleX) * ratio;
+      scaleY = parseInt(scaleY) * ratio;
+      return (
+        "translate(" +
+        translateX +
+        " " +
+        translateY +
+        ") rotate(" +
+        rotate +
+        ") scale(" +
+        scaleX +
+        " " +
+        scaleY +
+        ")"
+      );
     },
     // 添加文字
+    /**
+     * @param {import('@svgdotjs/svg.js').Svg} draw - SVG元素的封装，用于绘制 SVG 元素
+     * @param {HTMLCollectionOf<DrawableSvgElement>} collection - 待绘制的所有元素的集合
+     * @param {number} i - 当前被绘制元素的下标
+     *
+     * @returns {CollectionAndCallback}
+     */
     addTextRect(draw, collection, i) {
       // console.log(i)
       let x = parseFloat(collection[i].attributes.x.value);
@@ -792,18 +873,17 @@ export default {
 
       rect.attr("fill", fill);
       rect.attr("fill-opacity", 0.5);
-
     },
     // 添加旋转矩形
     addRotatedRect(draw, collection, i) {
       let ratio = 1150 / this.maxHeight;
-      let pointsStr='';
-      let points = collection[i].attributes.points.value.split(' ');
-      for(let point in points){
-        pointsStr += ratio*parseFloat(points[point])
-        pointsStr += ' '
+      let pointsStr = "";
+      let points = collection[i].attributes.points.value.split(" ");
+      for (let point in points) {
+        pointsStr += ratio * parseFloat(points[point]);
+        pointsStr += " ";
       }
-      
+
       let fill = collection[i].attributes.fill.value;
 
       let polygon = draw.polygon(pointsStr);
@@ -812,7 +892,6 @@ export default {
 
       polygon.attr("fill", fill);
       polygon.attr("fill-opacity", 0.5);
-
     },
     // 添加圆形
     addCircle(draw, collection, i) {
@@ -837,7 +916,6 @@ export default {
 
       circle.attr("fill", fill);
       circle.attr("fill-opacity", 0.5);
-
     },
     // 添加旋转椭圆
     addRotatedEllipse(draw, collection, i) {
@@ -855,10 +933,10 @@ export default {
       // rx *= ratio;
       // ry *= ratio;
 
-      transform = this.mulRatio(transform, ratio)
+      transform = this.mulRatio(transform, ratio);
 
-      let g = draw.group()
-      g.attr("transform",transform)
+      let g = draw.group();
+      g.attr("transform", transform);
       // console.log(g)
       let re = g.ellipse({
         cx: cx,
@@ -871,22 +949,21 @@ export default {
 
       re.attr("fill", fill);
       re.attr("fill-opacity", 0.5);
-
     },
     // 添加三角形
     addTri(draw, collection, i) {
       // console.log(i)
       let ratio = 1150 / this.maxHeight;
-      let pointsStr='';
-      let points = collection[i].attributes.points.value.split(' ');
-      for(let point in points){
-        let p = points[point].split(',')
-        pointsStr += ratio*parseFloat(p[0])
-        pointsStr += ','
-        pointsStr += ratio*parseFloat(p[1])
-        pointsStr += ' '
+      let pointsStr = "";
+      let points = collection[i].attributes.points.value.split(" ");
+      for (let point in points) {
+        let p = points[point].split(",");
+        pointsStr += ratio * parseFloat(p[0]);
+        pointsStr += ",";
+        pointsStr += ratio * parseFloat(p[1]);
+        pointsStr += " ";
       }
-      
+
       let fill = collection[i].attributes.fill.value;
 
       let polygon = draw.polygon(pointsStr);
@@ -895,7 +972,6 @@ export default {
 
       polygon.attr("fill", fill);
       polygon.attr("fill-opacity", 0.5);
-
     },
     // 设置video元素视频源为本地相机
     setVideoSrc() {
@@ -1026,20 +1102,42 @@ export default {
         // this.isLoading = false;
       });
     },
-    // input更新时更新对应的data元素和svg
-    onInputChange(input) {
-      // this.input = input.target.value.toUpperCase();
-      this.input = input.target.value.replace(
+    /**
+     * 去除字符串中的emoji表情
+     *
+     * @param {string} str
+     * @returns {string}
+     */
+    removeEmoji(str) {
+      return str.replace(
         /[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF][\u200D|\uFE0F]|[\uD83C|\uD83D|\uD83E][\uDC00-\uDFFF]|[0-9|*|#]\uFE0F\u20E3|[0-9|#]\u20E3|[\u203C-\u3299]\uFE0F\u200D|[\u203C-\u3299]\uFE0F|[\u2122-\u2B55]|\u303D|[\A9|\AE]\u3030|\uA9|\uAE|\u3030/gi,
         ""
       );
+    },
+    /**
+     * 去除空格和emoji表情，如果输入为空则返回defaultInput
+     * @param {string} str - 用户输入
+     * @returns {string}
+     */
+    sanitizeInput(str) {
+      const sanitized = this.removeEmoji(str).trim();
+      return sanitized.length ? sanitized : this.defaultInput;
+    },
+    /**
+     * input更新时更新对应的data元素和svg
+     *
+     * @param {Event} input
+     */
+    onInputChange(input) {
+      // this.input = input.target.value.toUpperCase();
+      this.input = this.removeEmoji(input.target.value);
 
       // 设置textSvg
       if (this.textObj == null) {
-        this.textObj = this.textSvgObj.text(this.input);
+        this.textObj = this.textSvgObj.text(this.drawingInput);
       } else {
         this.textObj.clear();
-        this.textObj.text(this.input);
+        this.textObj.text(this.drawingInput);
       }
 
       let rect = this.textObj.node.getBoundingClientRect();
@@ -1059,15 +1157,25 @@ export default {
     this.videoObj = document.getElementById("videoel");
     this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
     this.setVideoSrc();
-    if(this.mode == 'text'){
-      this.shape = 'textRect';
+    if (this.mode == "text") {
+      this.shape = "textRect";
     }
+  },
+  watch: {
+    /**
+     * 偷个懒，在 this.input 更新时同步更新 this.drawingInput
+     *
+     * @param {string} value
+     */
+    input(value) {
+      this.drawingInput = this.sanitizeInput(value);
+    },
   },
 };
 </script>
 
 <style>
-body{
+body {
   overflow: hidden;
 }
 #app {
@@ -1089,7 +1197,7 @@ body{
   width: 100%;
   position: absolute; */
 }
-#canvasCopy{
+#canvasCopy {
   display: none;
 }
 #inputTextSvg {
