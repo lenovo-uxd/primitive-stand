@@ -228,7 +228,6 @@ export default {
    * @property {import('@svgdotjs/svg.js').Svg} Data.textSvgObj
    * @property {import('@svgdotjs/svg.js').Text} Data.textObj
    * @property {string} Data.input - 用户输入文本，显示在输入框中
-   * @property {string} Data.drawingInput - 用于绘制图片的文本
    * @property {string} Data.defaultInput - 在 drawingInput 为空时使用 defaultInput 作为文本来绘制图片
    * @property {string} Data.timestamp
    * @returns {Data}
@@ -249,7 +248,6 @@ export default {
       textHeight: 0,
       // input的值
       input: "",
-      drawingInput: this.sanitizeInput(defaultInput),
       defaultInput: defaultInput,
       count: 4,
       videoObj: null,
@@ -1141,7 +1139,6 @@ export default {
       } else {
         this.textObj.clear();
         this.textObj.text(this.sanitizeInput(this.input));
-        console.log("onInputChange", this.textObj.text());
       }
 
       let rect = this.textObj.node.getBoundingClientRect();
