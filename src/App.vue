@@ -224,16 +224,18 @@ export default {
   /**
    * @typedef {object} Data
    * @property {('text'|'shape')} Data.mode
-   * @property {?XMLDocument} Data.mlDoc
+   * @property {?XMLDocument} Data.xmlDoc
    * @property {import('@svgdotjs/svg.js').Svg} Data.textSvgObj
    * @property {import('@svgdotjs/svg.js').Text} Data.textObj
    * @property {string} Data.input - 用户输入文本，显示在输入框中
    * @property {string} Data.drawingInput - 用于绘制图片的文本
-   * @property {string} Data.defaultInput - 在drawingInput为空时使用defaultInput作为文本来绘制图片
+   * @property {string} Data.defaultInput - 在 drawingInput 为空时使用 defaultInput 作为文本来绘制图片
    * @property {string} Data.timestamp
    * @returns {Data}
    */
   data() {
+    const defaultInput = "LENOVO";
+
     return {
       mode: "text", // ['text',shape]
       isVideoNeeded: false,
@@ -247,8 +249,8 @@ export default {
       textHeight: 0,
       // input的值
       input: "",
-      drawingInput: "",
-      defaultInput: "LENOVO",
+      drawingInput: this.sanitizeInput(defaultInput),
+      defaultInput: defaultInput,
       count: 4,
       videoObj: null,
       maxHeight: 500,
@@ -757,8 +759,9 @@ export default {
         ")"
       );
     },
-    // 添加文字
     /**
+     * 添加文字
+     *
      * @param {import('@svgdotjs/svg.js').Svg} draw - SVG元素的封装，用于绘制 SVG 元素
      * @param {HTMLCollectionOf<DrawableSvgElement>} collection - 待绘制的所有元素的集合
      * @param {number} i - 当前被绘制元素的下标
@@ -1134,10 +1137,11 @@ export default {
 
       // 设置textSvg
       if (this.textObj == null) {
-        this.textObj = this.textSvgObj.text(this.drawingInput);
+        this.textObj = this.textSvgObj.text(this.sanitizeInput(this.input));
       } else {
         this.textObj.clear();
-        this.textObj.text(this.drawingInput);
+        this.textObj.text(this.sanitizeInput(this.input));
+        console.log("onInputChange", this.textObj.text());
       }
 
       let rect = this.textObj.node.getBoundingClientRect();
@@ -1156,20 +1160,16 @@ export default {
     // 初始化
     this.videoObj = document.getElementById("videoel");
     this.textSvgObj = SVG().addTo("#inputTextSvg").size("100%", "100%");
+    
+    this.textObj = this.textSvgObj.text(this.defaultInput);
+    const rect = this.textObj.node.getBoundingClientRect();
+    this.textWidth = rect.width;
+    this.textHeight = rect.height;
+    
     this.setVideoSrc();
     if (this.mode == "text") {
       this.shape = "textRect";
     }
-  },
-  watch: {
-    /**
-     * 偷个懒，在 this.input 更新时同步更新 this.drawingInput
-     *
-     * @param {string} value
-     */
-    input(value) {
-      this.drawingInput = this.sanitizeInput(value);
-    },
   },
 };
 </script>
