@@ -147,13 +147,13 @@ app.post("/poster", function (req, res) {
   let timestamp = req.body.timestamp
   // console.log(posterBase64)
   var dataBuffer = Buffer.from(posterBase64, 'base64'); // 解码图片
-  fs.writeFile(imgPath + timestamp + ".jpg", dataBuffer, function (err) {
+  fs.writeFile(imgPath + timestamp + ".png", dataBuffer, function (err) {
     if (err) {
       // res.send(err);
       console.log(err);
     } else {
       // res.send("保存成功！");
-      console.log(timestamp + '.jpg保存成功！');
+      console.log(timestamp + '.png保存成功！');
     }
   });
   res.json({ "success": true })
@@ -181,7 +181,7 @@ app.post("/getsvg", async function (req, res) {
   const options = {
     shapeTypes: shapeMap[req.body.shape],
     candidateShapesPerStep: 1,
-    shapeMutationsPerStep: 40,
+    shapeMutationsPerStep: 150,
     alpha: 128
   }
   // console.log(req.body.shape)
