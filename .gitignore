@@ -2,7 +2,7 @@
 node_modules
 /server/node_modules
 /dist
-/server/public/save
+/server/public/
 
 
 # local env files
